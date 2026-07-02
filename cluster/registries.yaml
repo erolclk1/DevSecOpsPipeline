@@ -1,0 +1,8 @@
+mirrors:
+  "host.rancher-desktop.internal:5000":
+    endpoint:
+      - "http://host.rancher-desktop.internal:5000"
+configs:
+  "host.rancher-desktop.internal:5000":
+    tls:
+      insecure_skip_verify: true
