@@ -8,12 +8,12 @@
 
 ## Phases
 
-- [ ] **Phase 1 — Bootstrap** — Registry + k3s cluster + host-to-VM name resolution verified end-to-end
-- [ ] **Phase 2 — Vulnerable App** — Demo app with deterministic vulnerabilities built, pushed, and deployed via raw `kubectl apply`
-- [ ] **Phase 3 — GitOps** — ArgoCD auto-syncs from Git; Kyverno enforces admission policies; no direct cluster writes
-- [ ] **Phase 4 — Jenkins CI** — JCasC-driven pipeline automates build → Trivy scan → push → manifest bump without human involvement
-- [ ] **Phase 5 — Runtime Security** — Falco detects all three attack patterns; Falcosidekick persists alerts to file and webui
-- [ ] **Phase 6 — Demo Polish** — Three scenarios run from a Makefile; full stack reproduces on a clean machine from docs alone
+- [ ] **Phase 1: Bootstrap** — Registry + k3s cluster + host-to-VM name resolution verified end-to-end
+- [ ] **Phase 2: Vulnerable App** — Demo app with deterministic vulnerabilities built, pushed, and deployed via raw `kubectl apply`
+- [ ] **Phase 3: GitOps** — ArgoCD auto-syncs from Git; Kyverno enforces admission policies; no direct cluster writes
+- [ ] **Phase 4: Jenkins CI** — JCasC-driven pipeline automates build → Trivy scan → push → manifest bump without human involvement
+- [ ] **Phase 5: Runtime Security** — Falco detects all three attack patterns; Falcosidekick persists alerts to file and webui
+- [ ] **Phase 6: Demo Polish** — Three scenarios run from a Makefile; full stack reproduces on a clean machine from docs alone
 
 ---
 
@@ -47,7 +47,7 @@ All phases are strictly sequential. No parallelism is possible or useful at sing
 
 ---
 
-## Phase 1 — Bootstrap
+## Phase 1: Bootstrap
 
 **Goal:** Prove that a container pushed from the host reaches a running pod in the k3s cluster — registry name resolution verified end-to-end — before any application code exists.
 
@@ -77,11 +77,15 @@ All phases are strictly sequential. No parallelism is possible or useful at sing
 2. **Pitfall 13 — Docker Desktop conflict:** Running Docker Desktop alongside Rancher Desktop fights for the `docker` CLI symlink and `kubectl` context. Fully uninstall Docker Desktop before starting, or set `docker context use rancher-desktop` explicitly.
 3. **Open question must be answered here:** Document the exact `registries.yaml` hostname and k3s minor version (from `kubectl version`) before moving to Phase 2.
 
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 01-PLAN-registry-setup.md — Rancher Desktop + registry:2 + registries.yaml + host-side verification
+- [ ] 01-PLAN-pull-verification.md — Smoke image push, pod pull test, in-cluster registry curl
 
 ---
 
-## Phase 2 — Vulnerable App
+## Phase 2: Vulnerable App
 
 **Goal:** Build a demo REST API with known, deterministic vulnerabilities that Trivy reliably flags and attack scripts will reliably trigger — validating the end-to-end demo story before any pipeline automation is added.
 
@@ -117,7 +121,7 @@ All phases are strictly sequential. No parallelism is possible or useful at sing
 
 ---
 
-## Phase 3 — GitOps
+## Phase 3: GitOps
 
 **Goal:** Prove that a Git commit is the only mechanism that changes cluster state — ArgoCD syncs the app automatically and Kyverno rejects non-compliant manifests at admission time.
 
@@ -154,7 +158,7 @@ All phases are strictly sequential. No parallelism is possible or useful at sing
 
 ---
 
-## Phase 4 — Jenkins CI
+## Phase 4: Jenkins CI
 
 **Goal:** Automate the full build → scan → push → manifest-bump cycle so a Git push triggers Jenkins, Trivy either blocks or passes, and ArgoCD deploys the result — no human ever runs `kubectl` or `docker push` manually again.
 
@@ -190,7 +194,7 @@ All phases are strictly sequential. No parallelism is possible or useful at sing
 
 ---
 
-## Phase 5 — Runtime Security
+## Phase 5: Runtime Security
 
 **Goal:** Prove that attacks against the running demo application trigger named Falco alerts within 30 seconds, with events logged to a persistent file via Falcosidekick.
 
@@ -232,7 +236,7 @@ All phases are strictly sequential. No parallelism is possible or useful at sing
 
 ---
 
-## Phase 6 — Demo Polish
+## Phase 6: Demo Polish
 
 **Goal:** Package all three demo scenarios into one-command Makefile targets so the complete thesis demonstration reproduces on a clean machine in under one hour from docs alone.
 
@@ -275,7 +279,7 @@ All phases are strictly sequential. No parallelism is possible or useful at sing
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Bootstrap | 0/0 | Not started | — |
+| 1. Bootstrap | 0/2 | In planning | — |
 | 2. Vulnerable App | 0/0 | Not started | — |
 | 3. GitOps | 0/0 | Not started | — |
 | 4. Jenkins CI | 0/0 | Not started | — |
