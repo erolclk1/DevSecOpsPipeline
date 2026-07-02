@@ -54,7 +54,7 @@ Output: Running smoke pod (then cleaned up), cluster/registries.yaml updated wit
 1. Build the smoke image on the host using a minimal inline Dockerfile:
    ```
    docker build -t host.rancher-desktop.internal:5000/hello:smoke - <<'EOF'
-   FROM busybox:latest
+   FROM busybox:1.36.1
    CMD ["echo", "hello from registry"]
    EOF
    ```

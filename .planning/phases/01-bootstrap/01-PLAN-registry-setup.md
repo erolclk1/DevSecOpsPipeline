@@ -6,7 +6,7 @@ depends_on: []
 requirements_addressed: [INFRA-01, INFRA-02]
 files_modified:
   - cluster/registries.yaml
-autonomous: true
+autonomous: false
 must_haves:
   truths:
     - "kubectl get nodes returns a single node in Ready state"
