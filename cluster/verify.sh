@@ -6,7 +6,8 @@
 #   bash cluster/verify.sh
 
 REGISTRY_PORT="5000"
-REGISTRY_HOST="host.rancher-desktop.internal"
+REGISTRY_HOST="localhost"
+CLUSTER_REGISTRY_HOST="host.rancher-desktop.internal"
 SMOKE_IMAGE="${REGISTRY_HOST}:${REGISTRY_PORT}/hello:smoke"
 PASS=0; FAIL=0
 
@@ -93,7 +94,7 @@ sleep 1
 kubectl run curl-test \
   --image=curlimages/curl:8.5.0 \
   --restart=Never \
-  -- curl -sf --connect-timeout 10 "http://${REGISTRY_HOST}:${REGISTRY_PORT}/v2/" 2>/dev/null
+  -- curl -sf --connect-timeout 10 "http://${CLUSTER_REGISTRY_HOST}:${REGISTRY_PORT}/v2/" 2>/dev/null
 
 SC4_DONE=0
 for i in $(seq 1 12); do
@@ -111,7 +112,7 @@ for i in $(seq 1 12); do
   if [[ "${CURL_PHASE}" == "Failed" ]]; then
     CURL_OUT=$(kubectl logs curl-test 2>/dev/null)
     fail "SC4: curl pod Failed — '${CURL_OUT}'"
-    info "  Cluster cannot reach ${REGISTRY_HOST}:${REGISTRY_PORT}"
+    info "  Cluster cannot reach ${CLUSTER_REGISTRY_HOST}:${REGISTRY_PORT}"
     info "  Check: ~/.rd/k3s/registries.yaml  and  rdctl shutdown && rdctl start"
     SC4_DONE=1; break
   fi
