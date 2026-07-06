@@ -65,6 +65,11 @@ Rancher Desktop runs k3s inside a **Lima VM** (macOS) or a lightweight VM/namesp
 3. Do **not** hardcode the host's LAN IP in manifests — it changes on Wi-Fi/DHCP roams and breaks the demo.
 4. Add `insecure-registries` to Docker Desktop / Rancher Desktop preferences so pushes over HTTP don't require certificate provisioning.
 
+**Windows-specific:** `host.rancher-desktop.internal` resolves correctly inside k3s on Windows (WSL2 backend) — same hostname as macOS. The `registries.yaml` file path differs:
+- From Git Bash or WSL2: `~/.rd/k3s/registries.yaml`
+- Windows native (PowerShell): `$env:APPDATA\rancher-desktop\lima\data\k3s\registries.yaml`
+After editing the file, restart RD: `rdctl shutdown && rdctl start` (works from any shell on Windows).
+
 **Detection commands:**
 ```bash
 kubectl run curl --rm -it --image=curlimages/curl -- sh -c \
@@ -318,9 +323,16 @@ ArgoCD's built-in health checks are opinionated. For Deployments they check `ava
 **What goes wrong:** developers paste registry passwords into `casc.yaml` and push to GitHub. Bots harvest within hours.
 **Prevention:** Reference secrets via `${VAR}` in JCasC, inject through env vars from a `.env` file that is `.gitignore`d. Or use the JCasC `casc-secret-plugin` with a keystore. Document this in the README.
 
-### Pitfall 13: k3s + Docker Desktop conflict on macOS
+### Pitfall 13: Docker Desktop conflict with Rancher Desktop
 **What goes wrong:** Running Docker Desktop and Rancher Desktop simultaneously — both fight for the `docker` CLI symlink, and `kubectl` may point at the wrong context.
-**Prevention:** Uninstall Docker Desktop before installing Rancher Desktop, or explicitly set `docker context use rancher-desktop`. Verify with `kubectl config current-context`.
+
+**On macOS:** Uninstall Docker Desktop before installing Rancher Desktop, or explicitly set `docker context use rancher-desktop`. Verify with `kubectl config current-context`.
+
+**On Windows (target machine):** This conflict is very common. Docker Desktop and Rancher Desktop both install a `docker.exe` into PATH and both modify `%USERPROFILE%\.kube\config`. Resolution:
+1. Open Windows Settings → Apps and uninstall Docker Desktop completely (including WSL2 integration) before installing Rancher Desktop 1.23.1.
+2. If both are installed, set the active context: `kubectl config use-context rancher-desktop` and verify with `kubectl config current-context`.
+3. Docker CLI on Windows after RD install uses a Windows named pipe: `//./pipe/docker_engine`. If scripts use `/var/run/docker.sock`, run them inside WSL2 where RD bridges the socket automatically.
+4. If `docker` command still resolves to Docker Desktop's binary after uninstall, remove Docker Desktop's directory from the Windows `PATH` environment variable (System Properties → Environment Variables).
 
 ### Pitfall 14: ArgoCD Application in wrong namespace
 **What goes wrong:** `Application` CRs must live in the ArgoCD control-plane namespace (default `argocd`), but the deployed workloads go to a target namespace. Confusing the two causes "app not found" errors.

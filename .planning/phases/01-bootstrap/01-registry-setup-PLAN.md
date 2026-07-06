@@ -42,17 +42,26 @@ Output: Running k3s node (Ready), running registry container, `~/.rd/k3s/registr
 <task id="1" title="Install Rancher Desktop 1.23.1 and verify the cluster node is Ready">
 <read_first>
 - CLAUDE.md — Critical Rules section (Docker socket path, registry hostname, no Docker Desktop conflict)
-- .planning/research/PITFALLS.md — Pitfall 13 (Docker Desktop conflict on macOS)
+- .planning/research/PITFALLS.md — Pitfall 13 (Docker Desktop conflict — includes Windows-specific steps)
 </read_first>
 <action>
-1. Confirm Docker Desktop is NOT running. If it is installed, either uninstall it or run:
+**Target machine: Windows with Rancher Desktop (WSL2 backend). All steps below run on Windows.**
+
+1. Confirm Docker Desktop is NOT running. On Windows this conflict is common — uninstall Docker Desktop first (Settings → Apps) or at minimum set the active context:
    ```
-   docker context use rancher-desktop
+   kubectl config use-context rancher-desktop
    ```
    Verify with: `kubectl config current-context` — must return `rancher-desktop`.
 
-2. Download and install Rancher Desktop 1.23.1 from https://github.com/rancher-sandbox/rancher-desktop/releases/tag/v1.23.1
-   Select the macOS Apple Silicon (.aarch64.dmg) or Intel (.x86_64.dmg) installer as appropriate.
+   _macOS (if running a local test environment instead):_
+   ```
+   docker context use rancher-desktop
+   kubectl config current-context   # → rancher-desktop
+   ```
+
+2. Download and install Rancher Desktop 1.23.1:
+   - **Windows:** `.exe` installer from https://github.com/rancher-sandbox/rancher-desktop/releases/tag/v1.23.1
+   - **macOS (reference only):** `.aarch64.dmg` or `.x86_64.dmg` as appropriate
 
 3. In Rancher Desktop Preferences:
    - Container engine: dockerd (moby)
@@ -66,16 +75,20 @@ Output: Running k3s node (Ready), running registry container, `~/.rd/k3s/registr
    ```
    Record the exact k3s server version string (e.g. `v1.32.x+k3s1`). This resolves Open Question 3 from STATE.md — write it down for the SUMMARY step.
 
-5. The Docker socket on Rancher Desktop is at `~/.rd/docker.sock`, NOT `/var/run/docker.sock`. Verify Docker is reachable:
+5. Docker socket location differs by OS:
+   - **Windows (Git Bash):** `//./pipe/docker_engine` — set `export DOCKER_HOST=npipe:////./pipe/docker_engine`
+   - **Windows (WSL2 shell):** `/var/run/docker.sock` — RD bridges this automatically
+   - **macOS:** `~/.rd/docker.sock` — set `export DOCKER_HOST=unix://$HOME/.rd/docker.sock`
+
+   Verify Docker is reachable (Windows Git Bash example):
    ```
-   docker --context rancher-desktop version
+   docker version
    ```
-   Or set the environment variable for the session: `export DOCKER_HOST=unix://$HOME/.rd/docker.sock`
 </action>
 <acceptance_criteria>
 - `kubectl get nodes` output contains exactly one row and that row has STATUS `Ready`
 - `kubectl config current-context` prints `rancher-desktop`
-- `docker --context rancher-desktop version` exits 0 and shows Server Engine version
+- `docker version` exits 0 and shows Server Engine version
 - Rancher Desktop UI shows "Kubernetes: Running" (not "Starting" or error state)
 - k3s server version string has been recorded (e.g. `v1.32.x+k3s1`)
 </acceptance_criteria>
@@ -84,7 +97,7 @@ Output: Running k3s node (Ready), running registry container, `~/.rd/k3s/registr
 <task id="2" title="Start registry:2 on host port 5000 and author registries.yaml">
 <read_first>
 - CLAUDE.md — Critical Rules: registry hostname must be `host.rancher-desktop.internal:5000`, never localhost, never a hardcoded IP
-- .planning/research/PITFALLS.md — Pitfall 2 (registry cross-network problem)
+- .planning/research/PITFALLS.md — Pitfall 2 (registry cross-network problem, includes Windows note)
 - .planning/research/SUMMARY.md — Registry topology section
 </read_first>
 <action>
@@ -101,11 +114,18 @@ Output: Running k3s node (Ready), running registry container, `~/.rd/k3s/registr
    Expected response: `{}`
    If `host.rancher-desktop.internal` does not resolve on the host, also try `curl http://localhost:5000/v2/` — the host-side push path uses `localhost` in Rancher Desktop's DNS; the CLUSTER-SIDE pull path must use `host.rancher-desktop.internal`. Do not conflate the two.
 
-3. Create the Rancher Desktop containerd registry mirror config. The file path is:
-   ```
-   ~/.rd/k3s/registries.yaml
-   ```
-   Create the directory if it does not exist: `mkdir -p ~/.rd/k3s/`
+3. Create the Rancher Desktop containerd registry mirror config.
+
+   **File path by OS:**
+   | OS | Path |
+   |----|------|
+   | macOS | `~/.rd/k3s/registries.yaml` |
+   | Windows (Git Bash / WSL2) | `~/.rd/k3s/registries.yaml` |
+   | Windows (native PowerShell) | `$env:APPDATA\rancher-desktop\lima\data\k3s\registries.yaml` |
+
+   Create the directory if it does not exist:
+   - macOS / Git Bash / WSL2: `mkdir -p ~/.rd/k3s/`
+   - PowerShell: `New-Item -ItemType Directory -Force "$env:APPDATA\rancher-desktop\lima\data\k3s"`
 
    Write the following content exactly (this is the canonical content — do not paraphrase):
    ```yaml
@@ -121,7 +141,7 @@ Output: Running k3s node (Ready), running registry container, `~/.rd/k3s/registr
 
 4. Restart Rancher Desktop to reload the containerd config. Either:
    - Use the Rancher Desktop menu → Restart, or
-   - Run: `rdctl shutdown && rdctl start`
+   - Run: `rdctl shutdown && rdctl start` (works from PowerShell, CMD, or Git Bash on Windows)
    Wait for "Kubernetes: Running" to return in the UI before proceeding.
 
 5. Verify that the registry is still running after the restart (the `--restart=always` flag should bring it back automatically):
@@ -137,13 +157,13 @@ Output: Running k3s node (Ready), running registry container, `~/.rd/k3s/registr
    ```
    Add it to git: `git add cluster/registries.yaml`
 
-   Note: `cluster/registries.yaml` is the repo artefact (thesis evidence). `~/.rd/k3s/registries.yaml` is the live system config. They must have identical content.
+   Note: `cluster/registries.yaml` is the repo artefact (thesis evidence). `~/.rd/k3s/registries.yaml` (or its Windows native equivalent) is the live system config. They must have identical content.
 </action>
 <acceptance_criteria>
 - `docker ps | grep registry` shows a container named `registry` with status `Up` and port `0.0.0.0:5000->5000/tcp`
 - `curl http://host.rancher-desktop.internal:5000/v2/` returns `{}` with HTTP 200
-- File `~/.rd/k3s/registries.yaml` exists and contains `insecure_skip_verify: true` and `host.rancher-desktop.internal:5000`
-- File `cluster/registries.yaml` exists in the repo with identical content to `~/.rd/k3s/registries.yaml`
+- File `~/.rd/k3s/registries.yaml` (macOS/Git Bash/WSL2) or `%APPDATA%\rancher-desktop\lima\data\k3s\registries.yaml` (Windows native) exists and contains `insecure_skip_verify: true` and `host.rancher-desktop.internal:5000`
+- File `cluster/registries.yaml` exists in the repo with identical content to the live config
 - `kubectl get nodes` still shows one Ready node after the Rancher Desktop restart
 </acceptance_criteria>
 </task>

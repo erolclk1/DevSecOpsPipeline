@@ -16,7 +16,7 @@ See `.planning/REQUIREMENTS.md` for all 37 v1 requirement IDs.
 
 | Component | Version | Notes |
 |-----------|---------|-------|
-| Rancher Desktop | 1.23.1 | Docker + k3s on macOS. NOT Docker Desktop. |
+| Rancher Desktop | 1.23.1 | Docker + k3s on **Windows (WSL2)**. Target/pipeline machine. NOT Docker Desktop. Dev machine is macOS (code only). |
 | Jenkins LTS | 2.555.3 | Image: `jenkins/jenkins:2.555.3-lts-jdk21`. Java 21 required. |
 | ArgoCD | v3.4.4 | Helm chart `argo/argo-cd 10.1.0` |
 | Trivy | v0.72.0 | CLI shell step only — NOT Jenkins plugin |

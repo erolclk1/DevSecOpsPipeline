@@ -28,7 +28,7 @@
 | Falco | **0.44.1** | Helm chart `falcosecurity/falco 9.1.0`. `driver.kind=modern_ebpf` explicit. |
 | Falcosidekick | bundled in chart | File output + webui. ~250 MB added RAM. |
 | Kyverno | latest stable | 4 community policies. YAML, not Rego. |
-| Rancher Desktop | **1.23.1** | Docker + k3s on macOS. Single install. |
+| Rancher Desktop | **1.23.1** | Docker + k3s. Target machine: **Windows** (WSL2 backend). Dev machine: macOS (Claude Code only). |
 | k3s (bundled) | v1.32.x | Via Rancher Desktop. Verify exact minor with `kubectl version` post-install. |
 | Docker registry | `registry:2.8.3+` | Host container, port 5000. Configured via Rancher Desktop `registries.yaml`. |
 | Demo app runtime | **Node.js 22 LTS** | `node:22-alpine` for clean Trivy scan surface. Python 3.12 also acceptable. |
@@ -63,6 +63,12 @@ kubelet (VM)   ──image pull──►  host.rancher-desktop.internal:5000  (v
 ```
 
 Configure `~/.rd/k3s/registries.yaml` in Rancher Desktop. Reference the registry by hostname everywhere — never by IP (breaks on DHCP roam / VM restart).
+
+**Windows note:** `host.rancher-desktop.internal` resolves identically on Windows RD (WSL2 backend) — same hostname, same behavior. The `registries.yaml` file path differs:
+- macOS: `~/.rd/k3s/registries.yaml`
+- Windows (from Git Bash / WSL2): `~/.rd/k3s/registries.yaml` (same path inside WSL2 home)
+- Windows (native path): `%APPDATA%\rancher-desktop\lima\data\k3s\registries.yaml`
+- Alternatively on Windows: place via `rdctl` or the RD GUI (not under "Allowed Images" — that is image allowlisting, not mirror config).
 
 ### Critical anti-pattern
 
@@ -162,8 +168,9 @@ Rationale: each phase is testable in isolation. ArgoCD must exist before Jenkins
 
 | Question | Resolve When | Why It Matters |
 |----------|-------------|---------------|
+| **Target machine is Windows + Rancher Desktop (WSL2 backend)** — dev machine (macOS) is Claude Code only; all pipeline execution happens on the Windows machine | Confirmed — carry through all phases | Affects registries.yaml path, Docker socket path, script shell (Git Bash vs PowerShell), and kubectl invocation |
 | Exact `registries.yaml` syntax for Rancher Desktop 1.23.1 | Phase 1 | Hostname (`host.rancher-desktop.internal` vs `host.lima.internal`) may differ by version |
-| Does RD 1.23.1 expose `host.rancher-desktop.internal` reliably on Apple Silicon? | Phase 1 | If not, may force k3d as fallback despite staleness |
+| Does RD 1.23.1 expose `host.rancher-desktop.internal` reliably on Windows/WSL2? | Phase 1 | If not, may force k3d as fallback despite staleness |
 | Exact k3s minor version bundled with RD 1.23.1 | Phase 1 | `kubectl version --short` post-install |
 | Node.js or Python for demo app? | Phase 2 | Pick one and commit — affects Trivy CVE profile and attack scripts |
 | PostgreSQL vs SQLite for demo app? | Phase 2 | PostgreSQL enables credential-access Falco scenario; +150 MB RAM |

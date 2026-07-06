@@ -22,7 +22,7 @@ Tools are **fixed by thesis assignment** — this document pins current versions
 
 | Technology | Version | Purpose | Why this version | Confidence |
 |------------|---------|---------|------------------|------------|
-| Rancher Desktop | **1.23.1** (2026-06-29) | Docker + k3s on macOS/Linux | Latest release; bundles current k3s. Chosen over Docker Desktop for licensing and over Minikube for baseline RAM (~512 MB vs 2–4 GB). | HIGH |
+| Rancher Desktop | **1.23.1** (2026-06-29) | Docker + k3s. Target machine: **Windows** (WSL2 backend). Dev machine: macOS (code authoring only). | HIGH |
 | k3s (bundled) | v1.32.x (via Rancher Desktop 1.23.1) | Kubernetes cluster | Single-node k3s from Rancher Desktop meets thesis "locally runnable" constraint. No hypervisor tuning required. | MEDIUM (specific k3s minor version depends on Rancher Desktop image; verify with `kubectl version` post-install) |
 | Docker Engine | 27.x (via Rancher Desktop) | Container build/runtime | Bundled by Rancher Desktop; buildx available for multi-arch (Apple Silicon → linux/amd64 if needed). | HIGH |
 
@@ -197,6 +197,15 @@ configs:
       insecure_skip_verify: true
 ```
 
+**`registries.yaml` path by OS:**
+| OS | Path |
+|----|------|
+| macOS | `~/.rd/k3s/registries.yaml` |
+| Windows (Git Bash / WSL2) | `~/.rd/k3s/registries.yaml` (WSL2 home maps to the same RD data dir) |
+| Windows (native) | `%APPDATA%\rancher-desktop\lima\data\k3s\registries.yaml` |
+
+On Windows, after editing the file, restart RD: `rdctl shutdown && rdctl start` (works from PowerShell, CMD, or Git Bash).
+
 **Pros:** Simple, well-documented, works with any orchestrator. Independent of Rancher Desktop lifecycle.
 **Cons:** Need to configure k3s to trust it (one-time file edit).
 
@@ -232,34 +241,63 @@ Use **Option A (`registry:2`)** with Rancher Desktop. It matches PROJECT.md's Ra
 
 ## Installation Order (for roadmap Phase 1)
 
-```bash
-# 1. Host tools
-brew install --cask rancher-desktop     # 1.23.1
-brew install helm kubectl trivy         # trivy 0.72.0
+**All commands run on the target Windows machine.** Dev machine (macOS) only edits code.
 
-# 2. Local registry (before Jenkins so first build can push)
+**Windows (Git Bash / PowerShell):**
+```bash
+# 1. Install Rancher Desktop 1.23.1 from the Windows installer (.exe)
+#    After install, set Container Engine = dockerd, Memory = 6144 MB
+
+# Docker socket on Windows:
+#   Git Bash: set DOCKER_HOST=npipe:////./pipe/docker_engine
+#   WSL2:     /var/run/docker.sock  (RD bridges it automatically)
+#   PowerShell/CMD: uses Windows named pipe natively after RD installs docker CLI
+
+# 2. Local registry (Git Bash or PowerShell)
 docker run -d --restart=always -p 5000:5000 --name registry registry:2
 
-# 3. Configure Rancher Desktop registries.yaml (see above), then restart RD
+# 3. Configure registries.yaml on Windows
+#    Option A — Git Bash (path inside WSL2-mapped home):
+mkdir -p ~/.rd/k3s/
+# write registries.yaml to ~/.rd/k3s/registries.yaml
 
-# 4. Jenkins (containerized, JCasC-driven)
+#    Option B — Windows native path (PowerShell):
+#    $env:APPDATA\rancher-desktop\lima\data\k3s\registries.yaml
+
+# Restart RD after editing:
+rdctl shutdown && rdctl start
+
+# 4. Jenkins (Git Bash) — Docker socket path differs on Windows
 docker run -d --name jenkins \
   -p 8080:8080 -p 50000:50000 \
   -v jenkins_home:/var/jenkins_home \
-  -v ~/.rd/docker.sock:/var/run/docker.sock \
+  -v //./pipe/docker_engine://./pipe/docker_engine \
   -e CASC_JENKINS_CONFIG=/var/jenkins_home/casc.yaml \
   jenkins/jenkins:2.555.3-lts-jdk21
+# Note: on Windows the socket binding uses Windows named pipe syntax.
+# Alternative: run Jenkins in WSL2 and bind /var/run/docker.sock instead.
 
-# 5. ArgoCD
+# 5. ArgoCD — same as macOS; kubectl works from PowerShell/Git Bash post-RD install
 helm repo add argo https://argoproj.github.io/argo-helm
 helm install argocd argo/argo-cd --version 10.1.0 \
   --namespace argocd --create-namespace
 
-# 6. Falco
+# 6. Falco — same helm command; modern_ebpf works on WSL2 kernel
 helm repo add falcosecurity https://falcosecurity.github.io/charts
 helm install falco falcosecurity/falco --version 9.1.0 \
   --namespace falco --create-namespace \
   --set driver.kind=modern_ebpf --set tty=true
+```
+
+**macOS reference (dev machine — do NOT run the pipeline here):**
+```bash
+# 1. Host tools (code authoring / CLI only)
+brew install --cask rancher-desktop     # only if you want a local test env
+brew install helm kubectl trivy         # trivy 0.72.0
+
+# 2-6: same as Windows above, with macOS paths
+#   registries.yaml: ~/.rd/k3s/registries.yaml
+#   Jenkins Docker socket: -v ~/.rd/docker.sock:/var/run/docker.sock
 ```
 
 ---
