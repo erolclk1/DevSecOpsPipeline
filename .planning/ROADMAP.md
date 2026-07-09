@@ -8,7 +8,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Bootstrap** — Registry + k3s cluster + host-to-VM name resolution verified end-to-end
+- [x] **Phase 1: Bootstrap** — Registry + k3s cluster + host-to-VM name resolution verified end-to-end (completed 2026-07-09)
 - [ ] **Phase 2: Vulnerable App** — Demo app with deterministic vulnerabilities built, pushed, and deployed via raw `kubectl apply`
 - [ ] **Phase 3: GitOps** — ArgoCD auto-syncs from Git; Kyverno enforces admission policies; no direct cluster writes
 - [ ] **Phase 4: Jenkins CI** — JCasC-driven pipeline automates build → Trivy scan → push → manifest bump without human involvement
@@ -77,7 +77,7 @@ All phases are strictly sequential. No parallelism is possible or useful at sing
 2. **Pitfall 13 — Docker Desktop conflict:** Running Docker Desktop alongside Rancher Desktop fights for the `docker` CLI symlink and `kubectl` context. Fully uninstall Docker Desktop before starting, or set `docker context use rancher-desktop` explicitly.
 3. **Open question must be answered here:** Document the exact `registries.yaml` hostname and k3s minor version (from `kubectl version`) before moving to Phase 2.
 
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 01-PLAN-registry-setup.md — Rancher Desktop + registry:2 + registries.yaml + host-side verification
@@ -279,7 +279,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Bootstrap | 0/2 | In planning | — |
+| 1. Bootstrap | 0/2 | Complete    | 2026-07-09 |
 | 2. Vulnerable App | 0/0 | Not started | — |
 | 3. GitOps | 0/0 | Not started | — |
 | 4. Jenkins CI | 0/0 | Not started | — |
