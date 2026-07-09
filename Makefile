@@ -16,6 +16,7 @@
 
 SHELL := /bin/bash
 .PHONY: up down status phase-1 verify-phase-1 \
+        phase-2 phase-2-deploy verify-phase-2 \
         demo-1 demo-2 demo-3 \
         registry-start registry-stop \
         argocd-install falco-install jenkins-start \
@@ -35,9 +36,12 @@ JENKINS_PORT     := 8080
 up: phase-1
 	@echo ""
 	@echo "✓ Phase 1 complete. Next phases (run in order):"
-	@echo "  make phase-3   — ArgoCD + Kyverno"
-	@echo "  make phase-4   — Jenkins CI"
-	@echo "  make phase-5   — Falco runtime security"
+	@echo "  make phase-2         — build + scan + push demoapp"
+	@echo "  make phase-2-deploy  — kubectl apply + rollout"
+	@echo "  make verify-phase-2  — run Phase 2 success criteria checks"
+	@echo "  make phase-3         — ArgoCD + Kyverno"
+	@echo "  make phase-4         — Jenkins CI"
+	@echo "  make phase-5         — Falco runtime security"
 
 ## Teardown everything
 down: registry-stop teardown-argocd teardown-falco jenkins-stop
@@ -90,9 +94,23 @@ registry-start:
 registry-stop:
 	@docker rm -f registry 2>/dev/null && echo "✓ Registry stopped" || echo "  Registry was not running"
 
-## Run Phase 1 success criteria checks
+## Verify Phase 1 success criteria
 verify-phase-1:
 	@bash cluster/verify.sh
+
+# ── Phase 2: Vulnerable App ───────────────────────────────────────────────────
+
+## Phase 2: build + Trivy scan + push demoapp image
+phase-2:
+	@bash app/build.sh
+
+## Phase 2: update overlay tag + kubectl apply + rollout
+phase-2-deploy:
+	@bash app/deploy.sh
+
+## Run Phase 2 success criteria checks
+verify-phase-2:
+	@bash app/verify.sh
 
 # ── Phase 3: GitOps ───────────────────────────────────────────────────────────
 
