@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demoapp
+  namespace: demoapp
+spec:
+  template:
+    spec:
+      containers:
+        - name: demoapp
+          image: host.rancher-desktop.internal:5000/demoapp:487e267
