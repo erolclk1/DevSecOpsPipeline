@@ -1,0 +1,13 @@
+{
+  "name": "demoapp",
+  "version": "1.0.0",
+  "description": "Deliberately vulnerable demo REST API — thesis artefact",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "4.18.2",
+    "mysql": "2.18.1"
+  }
+}
