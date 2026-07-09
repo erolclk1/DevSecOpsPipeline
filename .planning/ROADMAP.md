@@ -115,9 +115,11 @@ Plans:
 2. **Pitfall 20 — Missing .dockerignore:** Without `.dockerignore`, the build context includes `.git`, `node_modules`, and any `.env` files. Add it before the first `docker build`.
 3. **Node.js vs Python decision:** This phase requires committing to one runtime. Node.js 22 is recommended (smaller Alpine surface, well-understood SQLi attack path). Document the choice in PROJECT.md Key Decisions before writing code.
 
-**Plans:** TBD
+**Plans:** 1/2 plans executed
 
-**UI hint**: yes
+Plans:
+- [ ] 02-app-scaffold-PLAN.md — Scaffold vulnerable Node.js API + Dockerfile + commit artefacts (macOS)
+- [ ] 02-deploy-verify-PLAN.md — Build, push, Kustomize manifests, kubectl apply, acceptance tests (Windows)
 
 ---
 
@@ -280,7 +282,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Bootstrap | 0/2 | Complete    | 2026-07-09 |
-| 2. Vulnerable App | 0/0 | Not started | — |
+| 2. Vulnerable App | 1/2 | In Progress|  |
 | 3. GitOps | 0/0 | Not started | — |
 | 4. Jenkins CI | 0/0 | Not started | — |
 | 5. Runtime Security | 0/0 | Not started | — |

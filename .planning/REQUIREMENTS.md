@@ -16,10 +16,10 @@
 
 ### Demo Application
 
-- [ ] **APP-01**: Vulnerable REST API (Node.js 22 or Python 3.12) with SQL injection endpoint (string-concatenated query, no parameterisation)
-- [ ] **APP-02**: Command injection endpoint (`os.system` / `child_process.exec` with unvalidated user input)
-- [ ] **APP-03**: Dockerfile with deliberately outdated base image (pinned old digest) that guarantees Trivy HIGH/CRITICAL findings on every build
-- [ ] **APP-04**: App initially runs as root in container (demonstrates Kyverno policy denial)
+- [x] **APP-01**: Vulnerable REST API (Node.js 22 or Python 3.12) with SQL injection endpoint (string-concatenated query, no parameterisation)
+- [x] **APP-02**: Command injection endpoint (`os.system` / `child_process.exec` with unvalidated user input)
+- [x] **APP-03**: Dockerfile with deliberately outdated base image (pinned old digest) that guarantees Trivy HIGH/CRITICAL findings on every build
+- [x] **APP-04**: App initially runs as root in container (demonstrates Kyverno policy denial)
 - [ ] **APP-05**: App has a README documenting each vulnerability with OWASP 2021 category reference
 
 ### CI Pipeline (Jenkins + Trivy)
@@ -121,10 +121,10 @@ Differentiators — add only after v1 is stable and demo scenarios are rehearsed
 | INFRA-02 | Phase 1: Bootstrap | Pending |
 | INFRA-03 | Phase 1: Bootstrap | Pending |
 | INFRA-04 | Phase 6: Polish | Pending |
-| APP-01 | Phase 2: Manual Deploy | Pending |
-| APP-02 | Phase 2: Manual Deploy | Pending |
-| APP-03 | Phase 2: Manual Deploy | Pending |
-| APP-04 | Phase 2: Manual Deploy | Pending |
+| APP-01 | Phase 2: Manual Deploy | Complete |
+| APP-02 | Phase 2: Manual Deploy | Complete |
+| APP-03 | Phase 2: Manual Deploy | Complete |
+| APP-04 | Phase 2: Manual Deploy | Complete |
 | APP-05 | Phase 6: Polish | Pending |
 | CI-01 | Phase 4: Jenkins CI | Pending |
 | CI-02 | Phase 4: Jenkins CI | Pending |

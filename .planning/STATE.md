@@ -4,12 +4,12 @@ milestone: v3.4.4
 milestone_name: milestone
 current_phase: 2
 status: unknown
-last_updated: "2026-07-09T17:15:54.257Z"
+last_updated: "2026-07-09T17:42:00.391Z"
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 
 **Core value:** Demonstrable, locally runnable pipeline where vulnerable container images are automatically blocked, secure images are deployed via GitOps, and cyberattacks are detected in real time — proving DevSecOps concepts work end-to-end.
 
-**Current focus:** Phase 1 — Bootstrap
+**Current focus:** Phase 2 — Vulnerable App
 
 ---
 
@@ -35,7 +35,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 | Phase | Name | Status | Notes |
 |-------|------|--------|-------|
 | 1 | Bootstrap | Not started | Registry + k3s + name resolution |
-| 2 | Vulnerable App | Not started | Demo app + manual kubectl deploy |
+| 2 | Vulnerable App | Planned | Node.js API + Dockerfile + kubectl deploy |
 | 3 | GitOps | Not started | ArgoCD + Kyverno |
 | 4 | Jenkins CI | Not started | JCasC + Trivy + manifest bump |
 | 5 | Runtime Security | Not started | Falco + Falcosidekick + attack scripts |
