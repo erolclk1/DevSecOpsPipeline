@@ -7,7 +7,7 @@
 #   bash app/build.sh
 
 REGISTRY_HOST="host.rancher-desktop.internal"
-REGISTRY_PORT="5000"
+REGISTRY_PORT="5001"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'

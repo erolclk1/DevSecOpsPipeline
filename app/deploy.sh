@@ -7,7 +7,7 @@
 #   bash app/deploy.sh
 
 REGISTRY_HOST="host.rancher-desktop.internal"
-REGISTRY_PORT="5000"
+REGISTRY_PORT="5001"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PATCH_FILE="${REPO_ROOT}/deploy/overlays/local/demoapp-patch.yaml"

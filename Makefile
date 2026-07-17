@@ -23,7 +23,7 @@ SHELL := /bin/bash
         reset-jenkins teardown-argocd teardown-falco
 
 # ── Config ────────────────────────────────────────────────────────────────────
-REGISTRY_PORT    := 5000
+REGISTRY_PORT    := 5001
 REGISTRY_HOST    := host.rancher-desktop.internal
 ARGOCD_VERSION   := 10.1.0
 FALCO_VERSION    := 9.1.0

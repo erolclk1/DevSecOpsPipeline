@@ -5,7 +5,7 @@
 # Run from Git Bash (Windows) or Terminal (macOS):
 #   bash cluster/verify.sh
 
-REGISTRY_PORT="5000"
+REGISTRY_PORT="5001"
 REGISTRY_HOST="localhost"
 CLUSTER_REGISTRY_HOST="host.rancher-desktop.internal"
 SMOKE_IMAGE="${REGISTRY_HOST}:${REGISTRY_PORT}/hello:smoke"
@@ -33,7 +33,7 @@ if echo "${RESP}" | grep -q '{}'; then
   ok "SC2: Registry reachable at localhost:${REGISTRY_PORT}"
 else
   fail "SC2: Registry not reachable (got: '${RESP}')"
-  info "  Run: docker run -d --restart=always -p 5000:5000 --name registry registry:2"
+  info "  Run: docker run -d --restart=always -p 5001:5000 --name registry registry:2"
 fi
 
 # ── SC3: Pod can pull image from registry ─────────────────────────────────────

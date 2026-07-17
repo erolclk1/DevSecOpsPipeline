@@ -22,7 +22,7 @@ See `.planning/REQUIREMENTS.md` for all 37 v1 requirement IDs.
 | Trivy | v0.72.0 | CLI shell step only — NOT Jenkins plugin |
 | Falco | 0.44.1 | Helm chart `falcosecurity/falco 9.1.0` |
 | Kyverno | latest stable | 4 community policies |
-| Docker registry | `registry:2` | Host container, port 5000 |
+| Docker registry | `registry:2` | Host container, port 5001 (5000 conflicts with Rancher Desktop's internal proxy) |
 | Demo app | Node.js 22 LTS | `node:22-alpine` base (prod), old pinned digest (vuln demo) |
 
 ## Architecture
@@ -45,7 +45,7 @@ Jenkins → Git only (never `kubectl apply`). ArgoCD → cluster only. This sepa
 
 1. **Jenkins MUST NOT `kubectl apply` directly.** Jenkins commits to `deploy/overlays/local/` only. ArgoCD syncs to cluster.
 2. **Falco must use `driver.kind=modern_ebpf`** — Rancher Desktop VM has no kernel headers; kmod fails.
-3. **Registry hostname is `host.rancher-desktop.internal:5000`** — never `localhost:5000` in manifests (breaks inside VM). Never hardcode an IP (breaks on DHCP roam).
+3. **Registry hostname is `host.rancher-desktop.internal:5001`** — never `localhost:5001` in manifests (breaks inside VM). Never hardcode an IP (breaks on DHCP roam). Port 5001 is used because Rancher Desktop binds port 5000 internally.
 4. **Image tags are always git short SHA** — never `:latest`. Enforced by Kyverno `disallow-latest-tag` policy.
 5. **Attack scripts target localhost/cluster only** — ethical constraint; scripts must refuse to run against external targets.
 

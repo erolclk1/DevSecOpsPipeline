@@ -6,7 +6,7 @@
 #   bash app/verify.sh
 
 REGISTRY_HOST="host.rancher-desktop.internal"
-REGISTRY_PORT="5000"
+REGISTRY_PORT="5001"
 NODEPORT="30080"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
