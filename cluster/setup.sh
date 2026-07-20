@@ -50,64 +50,19 @@ curl -sf "http://localhost:${REGISTRY_PORT}/v2/" | grep -q '{}' \
   && ok "Registry reachable at localhost:${REGISTRY_PORT}" \
   || die "Registry not reachable at localhost:${REGISTRY_PORT} — check: docker ps"
 
-# ── 3. Configure Docker daemon insecure-registries INSIDE the VM ─────────────
-# This is the actual fix. The dockerd that k3s uses must treat our registry
-# as insecure (HTTP). daemon.json lives in the rancher-desktop WSL2 distro.
-echo "── Configuring Docker daemon insecure-registries ───────────────────────"
+# ── 3. Install RD provisioning script for insecure-registries ────────────────
+# A manually-written /etc/docker/daemon.json is OVERWRITTEN by Rancher Desktop
+# on restart. A provisioning script re-applies the config on EVERY boot, before
+# dockerd starts — this is the reliable, restart-proof approach.
+echo "── Installing insecure-registry provisioning script ────────────────────"
+bash "${SCRIPT_DIR}/install-provisioning.sh" \
+  || warn "Provisioning install reported an issue — see output above."
 
-DAEMON_JSON=$(cat <<EOF
-{
-  "insecure-registries": ["${REGISTRY_REF}"]
-}
-EOF
-)
-
-DAEMON_WRITTEN=0
-
-detect_rd_distro() {
-  wsl --list --quiet 2>/dev/null | tr -d '\r\0' | grep -i "^rancher-desktop$" | head -1
-}
-
-if command -v wsl &>/dev/null; then
-  # Windows: write daemon.json into the rancher-desktop WSL distro (runs as root)
-  RD_DISTRO=$(detect_rd_distro)
-  if [ -z "${RD_DISTRO}" ]; then
-    RD_DISTRO="rancher-desktop"
-  fi
-  if wsl -d "${RD_DISTRO}" -- sh -c 'mkdir -p /etc/docker && cat > /etc/docker/daemon.json' <<< "${DAEMON_JSON}" 2>/dev/null; then
-    ok "Wrote /etc/docker/daemon.json in WSL distro '${RD_DISTRO}'"
-    DAEMON_WRITTEN=1
-  fi
-elif command -v rdctl &>/dev/null; then
-  # macOS/Linux: write via rdctl shell into the Lima VM
-  if rdctl shell sudo sh -c 'mkdir -p /etc/docker && cat > /etc/docker/daemon.json' <<< "${DAEMON_JSON}" 2>/dev/null; then
-    ok "Wrote /etc/docker/daemon.json via rdctl shell"
-    DAEMON_WRITTEN=1
-  fi
-fi
-
-if [ "${DAEMON_WRITTEN}" -eq 0 ]; then
-  warn "Could not write daemon.json into the VM automatically."
-  echo ""
-  echo "  Run this manually (Windows Git Bash / PowerShell):"
-  echo "    wsl -d rancher-desktop -- sh -c 'mkdir -p /etc/docker && cat > /etc/docker/daemon.json' <<'EOF'"
-  echo "    ${DAEMON_JSON}"
-  echo "    EOF"
-  echo ""
-  echo "  Or on macOS/Linux:"
-  echo "    rdctl shell sudo sh -c 'mkdir -p /etc/docker && printf ... > /etc/docker/daemon.json'"
-  echo ""
-fi
-
-# Also drop registries.yaml as a best-effort artefact (only used IF engine=containerd)
-mkdir -p "$HOME/.rd/k3s"
-cp "${SCRIPT_DIR}/registries.yaml" "$HOME/.rd/k3s/registries.yaml" 2>/dev/null || true
-
-# ── 4. Restart Rancher Desktop to reload the Docker daemon ───────────────────
+# ── 4. Restart Rancher Desktop to run the provisioning script ────────────────
 echo ""
-warn "Rancher Desktop must be restarted so dockerd reloads daemon.json."
+warn "Rancher Desktop must be restarted so the provisioning script runs."
 echo "  Option A (CLI): rdctl shutdown && rdctl start"
-echo "  Option B (GUI): Rancher Desktop tray icon → Restart Kubernetes / Quit + reopen"
+echo "  Option B (GUI): Rancher Desktop tray icon → Quit, then reopen"
 echo ""
 echo "After restart, verify the daemon picked up the config:"
 echo "  docker info | grep -A2 'Insecure Registries'"

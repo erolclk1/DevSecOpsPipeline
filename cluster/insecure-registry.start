@@ -1,0 +1,32 @@
+#!/bin/sh
+# insecure-registry.start — Rancher Desktop provisioning script (WSL backend)
+#
+# Runs INSIDE the Rancher Desktop VM on every start, BEFORE dockerd is enabled.
+# This is the reliable way to make dockerd trust our plain-HTTP local registry —
+# a manually-written /etc/docker/daemon.json gets overwritten by RD on restart,
+# but a provisioning script re-applies the config on every boot.
+#
+# MUST use Unix (LF) line endings. Install via cluster/install-provisioning.sh
+# which copies this to %LOCALAPPDATA%\rancher-desktop\provisioning\
+#
+# Root cause: RD with dockerd (moby) engine pulls k8s images through cri-dockerd
+# → the Docker daemon. The daemon defaults to HTTPS and rejects our HTTP registry
+# with "http: server gave HTTP response to HTTPS client". insecure-registries fixes it.
+
+REGISTRY_REF="host.rancher-desktop.internal:5001"
+
+mkdir -p /etc/docker
+
+# Merge-safe write: if daemon.json exists, we still overwrite with our known-good
+# config (Phase 1 only needs this single setting). Extend here if more is needed later.
+cat > /etc/docker/daemon.json <<EOF
+{
+  "insecure-registries": ["${REGISTRY_REF}"]
+}
+EOF
+
+# If dockerd is already running when this re-runs, reload it so the change applies
+# without a full restart. On cold start dockerd hasn't started yet, so this is a no-op.
+if pidof dockerd >/dev/null 2>&1; then
+  kill -HUP "$(pidof dockerd)" 2>/dev/null || true
+fi
