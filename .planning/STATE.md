@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v3.4.4
 milestone_name: milestone
-current_phase: 2
-status: unknown
-last_updated: "2026-07-09T17:42:00.391Z"
+current_phase: 3
+status: on_track
+last_updated: "2026-07-23T00:00:00.000Z"
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
 
 **Last updated:** 2026-07-02
-**Current phase:** 2
+**Current phase:** 3
 **Overall status:** ON TRACK
 
 ---
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 
 **Core value:** Demonstrable, locally runnable pipeline where vulnerable container images are automatically blocked, secure images are deployed via GitOps, and cyberattacks are detected in real time — proving DevSecOps concepts work end-to-end.
 
-**Current focus:** Phase 2 — Vulnerable App
+**Current focus:** Phase 3 — GitOps
 
 ---
 
@@ -34,8 +34,8 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 
 | Phase | Name | Status | Notes |
 |-------|------|--------|-------|
-| 1 | Bootstrap | Not started | Registry + k3s + name resolution |
-| 2 | Vulnerable App | Planned | Node.js API + Dockerfile + kubectl deploy |
+| 1 | Bootstrap | Complete | Registry + k3s + name resolution (2026-07-09) |
+| 2 | Vulnerable App | Complete | demoapp:6af2848 deployed, 4/4 SC passed (2026-07-23) |
 | 3 | GitOps | Not started | ArgoCD + Kyverno |
 | 4 | Jenkins CI | Not started | JCasC + Trivy + manifest bump |
 | 5 | Runtime Security | Not started | Falco + Falcosidekick + attack scripts |

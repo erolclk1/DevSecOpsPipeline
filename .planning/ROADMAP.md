@@ -9,7 +9,7 @@
 ## Phases
 
 - [x] **Phase 1: Bootstrap** — Registry + k3s cluster + host-to-VM name resolution verified end-to-end (completed 2026-07-09)
-- [ ] **Phase 2: Vulnerable App** — Demo app with deterministic vulnerabilities built, pushed, and deployed via raw `kubectl apply`
+- [x] **Phase 2: Vulnerable App** — Demo app with deterministic vulnerabilities built, pushed, and deployed via raw `kubectl apply` (completed 2026-07-23)
 - [ ] **Phase 3: GitOps** — ArgoCD auto-syncs from Git; Kyverno enforces admission policies; no direct cluster writes
 - [ ] **Phase 4: Jenkins CI** — JCasC-driven pipeline automates build → Trivy scan → push → manifest bump without human involvement
 - [ ] **Phase 5: Runtime Security** — Falco detects all three attack patterns; Falcosidekick persists alerts to file and webui
