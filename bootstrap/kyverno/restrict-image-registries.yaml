@@ -1,0 +1,33 @@
+# bootstrap/kyverno/restrict-image-registries.yaml
+# Requires demoapp namespace pods to use images from host.rancher-desktop.internal:5001.
+#
+# CRITICAL SCOPING: namespaces: [demoapp] — NOT cluster-wide.
+# Applying cluster-wide in Enforce mode would block ArgoCD, Kyverno, and k3s
+# system pods from pulling images from docker.io/gcr.io/ghcr.io, breaking the cluster.
+# validationFailureAction: Audit — records violations without blocking.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-image-registries
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+  - name: validate-registries
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+          namespaces:
+            - demoapp
+    validate:
+      message: "Images must come from host.rancher-desktop.internal:5001."
+      pattern:
+        spec:
+          containers:
+          - image: "host.rancher-desktop.internal:5001/*"
+          =(initContainers):
+          - image: "host.rancher-desktop.internal:5001/*"
+          =(ephemeralContainers):
+          - image: "host.rancher-desktop.internal:5001/*"

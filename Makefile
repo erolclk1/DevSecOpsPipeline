@@ -17,15 +17,16 @@
 SHELL := /bin/bash
 .PHONY: up down status phase-1 verify-phase-1 \
         phase-2 phase-2-deploy verify-phase-2 \
+        argocd-install verify-phase-3-argocd \
+        kyverno-install verify-phase-3-kyverno \
         demo-1 demo-2 demo-3 \
         registry-start registry-stop \
-        argocd-install falco-install jenkins-start \
-        reset-jenkins teardown-argocd teardown-falco
+        falco-install jenkins-start \
+        reset-jenkins teardown-argocd teardown-falco teardown-kyverno
 
 # ── Config ────────────────────────────────────────────────────────────────────
 REGISTRY_PORT    := 5001
 REGISTRY_HOST    := host.rancher-desktop.internal
-ARGOCD_VERSION   := 10.1.0
 FALCO_VERSION    := 9.1.0
 JENKINS_IMAGE    := jenkins/jenkins:2.555.3-lts-jdk21
 JENKINS_PORT     := 8080
@@ -114,26 +115,62 @@ verify-phase-2:
 
 # ── Phase 3: GitOps ───────────────────────────────────────────────────────────
 
-## Install ArgoCD v3.4.4
+# ── Phase 3: GitOps (ArgoCD + Kyverno) ───────────────────────────────────────
+
+## Install ArgoCD v3.4.4 (non-HA, dex disabled, resource limits, 30s sync)
 argocd-install:
-	@echo "── Installing ArgoCD $(ARGOCD_VERSION) ──────────────────────────────"
-	helm repo add argo https://argoproj.github.io/argo-helm 2>/dev/null || true
-	helm repo update argo
-	helm upgrade --install argocd argo/argo-cd \
-		--version $(ARGOCD_VERSION) \
-		--namespace argocd --create-namespace \
-		--set server.replicas=1 \
-		--set controller.replicas=1 \
-		--set redis-ha.enabled=false \
-		--wait
-	@echo "✓ ArgoCD installed"
-	@echo "  Access UI: kubectl port-forward svc/argocd-server -n argocd 8443:443"
-	@echo "  Password:  kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath='{.data.password}' | base64 -d"
+	@bash bootstrap/argocd/argocd-install.sh
+
+## Verify Phase 3 ArgoCD success criteria
+verify-phase-3-argocd:
+	@echo "── Phase 3 ArgoCD Verification ──────────────────────────────────────"
+	@echo "1. Helm chart installed:"
+	@helm list -n argocd --filter argocd
+	@echo "2. All pods Running:"
+	@kubectl get pods -n argocd
+	@echo "3. Application sync status:"
+	@kubectl get application demoapp -n argocd \
+	  -o jsonpath='  sync={.status.sync.status} health={.status.health.status}' 2>/dev/null && echo || echo "  Application CR not yet applied"
+	@echo "4. demoapp pod image tag:"
+	@kubectl get pods -n demoapp -o jsonpath='{range .items[*]}{.spec.containers[0].image}{"\n"}{end}' 2>/dev/null || echo "  demoapp pods not found"
+	@echo ""
+	@echo "Manual checks required:"
+	@echo "  a) https://localhost:8443 — ArgoCD UI shows demoapp Synced + Healthy"
+	@echo "  b) Self-heal: kubectl edit deployment demoapp -n demoapp (change tag) → reverts within 30s"
+
+## Install Kyverno v1.18.2 with 4 ClusterPolicies
+kyverno-install:
+	@bash bootstrap/kyverno/kyverno-install.sh
+
+## Verify Phase 3 Kyverno success criteria
+verify-phase-3-kyverno:
+	@echo "── Phase 3 Kyverno Verification ─────────────────────────────────────"
+	@echo "1. Helm chart installed:"
+	@helm list -n kyverno --filter kyverno
+	@echo "2. All Kyverno pods Running:"
+	@kubectl get pods -n kyverno
+	@echo "3. ClusterPolicies present:"
+	@kubectl get clusterpolicy -o wide
+	@echo "4. PolicyReport in demoapp namespace:"
+	@kubectl get polr -n demoapp -o wide 2>/dev/null || echo "  No PolicyReports yet — wait 2-3 minutes for background scan"
+	@echo "5. ArgoCD still Synced after Kyverno install:"
+	@kubectl get application demoapp -n argocd \
+	  -o jsonpath='  sync={.status.sync.status} health={.status.health.status}' && echo
+	@echo ""
+	@echo "Manual check required:"
+	@echo "  Test :latest blocking: kubectl run test-latest --image=nginx:latest -n demoapp --restart=Never"
+	@echo "  Expected: admission webhook denied the request (mutable image tag)"
 
 ## Teardown ArgoCD
 teardown-argocd:
 	@helm uninstall argocd -n argocd 2>/dev/null && echo "✓ ArgoCD removed" || echo "  ArgoCD was not installed"
 	@kubectl delete namespace argocd 2>/dev/null || true
+
+## Teardown Kyverno
+teardown-kyverno:
+	@kubectl delete -f bootstrap/kyverno/ 2>/dev/null || true
+	@helm uninstall kyverno -n kyverno 2>/dev/null && echo "✓ Kyverno removed" || echo "  Kyverno was not installed"
+	@kubectl delete namespace kyverno 2>/dev/null || true
 
 # ── Phase 4: Jenkins CI ───────────────────────────────────────────────────────
 

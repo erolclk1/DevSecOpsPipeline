@@ -1,0 +1,44 @@
+# bootstrap/argocd/application.yaml
+# ArgoCD Application CR — apply once to argocd namespace.
+# Watches deploy/overlays/local/ in the GitHub repo.
+# Auto-sync with selfHeal and prune enabled.
+#
+# CRITICAL: This file is the ONLY mechanism for changing cluster state.
+# Jenkins MUST NOT kubectl apply. ArgoCD owns cluster deployments.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demoapp
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/erolclk1/DevSecOpsPipeline.git
+    targetRevision: main
+    path: deploy/overlays/local
+    kustomize: {}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demoapp
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      managedFieldsManagers:
+        - kyverno
+        - kyverno-background-controller
+        - kube-controller-manager

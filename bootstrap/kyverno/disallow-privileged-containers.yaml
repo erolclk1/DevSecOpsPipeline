@@ -1,0 +1,32 @@
+# bootstrap/kyverno/disallow-privileged-containers.yaml
+# Blocks containers with privileged: true in securityContext.
+# NOTE: demoapp runs as root (no USER directive) but does NOT set privileged: true.
+# Running as root user != privileged container mode. demoapp PASSES this policy.
+# Audit mode: avoids blocking Falco DaemonSet (Phase 5) which uses privileged mode.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privileged-containers
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+  - name: privileged-containers
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    validate:
+      message: "Privileged mode is disallowed."
+      pattern:
+        spec:
+          =(initContainers):
+            - =(securityContext):
+                =(privileged): "false"
+          =(ephemeralContainers):
+            - =(securityContext):
+                =(privileged): "false"
+          containers:
+            - =(securityContext):
+                =(privileged): "false"

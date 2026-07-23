@@ -1,0 +1,45 @@
+# bootstrap/kyverno/require-resource-limits.yaml
+# Requires CPU and memory requests and memory limits on all containers.
+# demoapp deployment already declares requests {cpu:100m, memory:128Mi}
+# and limits {cpu:500m, memory:256Mi} — it PASSES this policy.
+# Audit mode: k3s system pods often lack explicit resource declarations.
+# Source: community policy require-pod-requests-limits, renamed for clarity.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-resource-limits
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+  - name: validate-resources
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    validate:
+      message: "CPU and memory resource requests and memory limits are required."
+      pattern:
+        spec:
+          containers:
+          - resources:
+              requests:
+                memory: "?*"
+                cpu: "?*"
+              limits:
+                memory: "?*"
+          =(initContainers):
+          - resources:
+              requests:
+                memory: "?*"
+                cpu: "?*"
+              limits:
+                memory: "?*"
+          =(ephemeralContainers):
+          - resources:
+              requests:
+                memory: "?*"
+                cpu: "?*"
+              limits:
+                memory: "?*"
