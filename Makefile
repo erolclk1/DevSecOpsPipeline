@@ -17,8 +17,9 @@
 SHELL := /bin/bash
 .PHONY: up down status phase-1 verify-phase-1 \
         phase-2 phase-2-deploy verify-phase-2 \
-        argocd-install verify-phase-3-argocd \
-        kyverno-install verify-phase-3-kyverno \
+        phase-3 phase-3-apply verify-phase-3-argocd \
+        phase-3-kyverno verify-phase-3-kyverno \
+        argocd-install kyverno-install \
         demo-1 demo-2 demo-3 \
         registry-start registry-stop \
         falco-install jenkins-start \
@@ -117,49 +118,33 @@ verify-phase-2:
 
 # ── Phase 3: GitOps (ArgoCD + Kyverno) ───────────────────────────────────────
 
+## Phase 3: install ArgoCD (helm install + sync interval config)
+phase-3:
+	@bash bootstrap/argocd/argocd-install.sh
+
+## Phase 3: apply ArgoCD Application CR and wait for Synced/Healthy
+phase-3-apply:
+	@bash bootstrap/argocd/apply.sh
+
+## Run Phase 3 ArgoCD success criteria checks
+verify-phase-3-argocd:
+	@bash bootstrap/argocd/verify.sh
+
+## Phase 3: install Kyverno + apply 4 ClusterPolicies
+phase-3-kyverno:
+	@bash bootstrap/kyverno/kyverno-install.sh
+
+## Run Phase 3 Kyverno success criteria checks
+verify-phase-3-kyverno:
+	@bash bootstrap/kyverno/verify.sh
+
 ## Install ArgoCD v3.4.4 (non-HA, dex disabled, resource limits, 30s sync)
 argocd-install:
 	@bash bootstrap/argocd/argocd-install.sh
 
-## Verify Phase 3 ArgoCD success criteria
-verify-phase-3-argocd:
-	@echo "── Phase 3 ArgoCD Verification ──────────────────────────────────────"
-	@echo "1. Helm chart installed:"
-	@helm list -n argocd --filter argocd
-	@echo "2. All pods Running:"
-	@kubectl get pods -n argocd
-	@echo "3. Application sync status:"
-	@kubectl get application demoapp -n argocd \
-	  -o jsonpath='  sync={.status.sync.status} health={.status.health.status}' 2>/dev/null && echo || echo "  Application CR not yet applied"
-	@echo "4. demoapp pod image tag:"
-	@kubectl get pods -n demoapp -o jsonpath='{range .items[*]}{.spec.containers[0].image}{"\n"}{end}' 2>/dev/null || echo "  demoapp pods not found"
-	@echo ""
-	@echo "Manual checks required:"
-	@echo "  a) https://localhost:8443 — ArgoCD UI shows demoapp Synced + Healthy"
-	@echo "  b) Self-heal: kubectl edit deployment demoapp -n demoapp (change tag) → reverts within 30s"
-
 ## Install Kyverno v1.18.2 with 4 ClusterPolicies
 kyverno-install:
 	@bash bootstrap/kyverno/kyverno-install.sh
-
-## Verify Phase 3 Kyverno success criteria
-verify-phase-3-kyverno:
-	@echo "── Phase 3 Kyverno Verification ─────────────────────────────────────"
-	@echo "1. Helm chart installed:"
-	@helm list -n kyverno --filter kyverno
-	@echo "2. All Kyverno pods Running:"
-	@kubectl get pods -n kyverno
-	@echo "3. ClusterPolicies present:"
-	@kubectl get clusterpolicy -o wide
-	@echo "4. PolicyReport in demoapp namespace:"
-	@kubectl get polr -n demoapp -o wide 2>/dev/null || echo "  No PolicyReports yet — wait 2-3 minutes for background scan"
-	@echo "5. ArgoCD still Synced after Kyverno install:"
-	@kubectl get application demoapp -n argocd \
-	  -o jsonpath='  sync={.status.sync.status} health={.status.health.status}' && echo
-	@echo ""
-	@echo "Manual check required:"
-	@echo "  Test :latest blocking: kubectl run test-latest --image=nginx:latest -n demoapp --restart=Never"
-	@echo "  Expected: admission webhook denied the request (mutable image tag)"
 
 ## Teardown ArgoCD
 teardown-argocd:
