@@ -46,6 +46,8 @@ Jenkins → Git only (never `kubectl apply`). ArgoCD → cluster only. This sepa
 1. **Jenkins MUST NOT `kubectl apply` directly.** Jenkins commits to `deploy/overlays/local/` only. ArgoCD syncs to cluster.
 2. **Falco must use `driver.kind=modern_ebpf`** — Rancher Desktop VM has no kernel headers; kmod fails.
 3. **Registry hostname is `host.rancher-desktop.internal:5001`** — never `localhost:5001` in manifests (breaks inside VM). Never hardcode an IP (breaks on DHCP roam). Port 5001 is used because Rancher Desktop binds port 5000 internally.
+   - Push from host always via `localhost:5001` (HTTP, no TLS issue).
+   - **dockerd engine ignores `registries.yaml`** — uses `insecure-registries` in `/etc/docker/daemon.json` inside the VM instead. Applied via `cluster/insecure-registry.start` provisioning script (survives RD restarts).
 4. **Image tags are always git short SHA** — never `:latest`. Enforced by Kyverno `disallow-latest-tag` policy.
 5. **Attack scripts target localhost/cluster only** — ethical constraint; scripts must refuse to run against external targets.
 

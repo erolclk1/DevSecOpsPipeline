@@ -10,7 +10,7 @@
 
 - **k3d is stale (no release since June 2024) — use Rancher Desktop 1.23.1 + `registry:2`.** The k3d registry auto-wiring advantage is outweighed by 2-year staleness; configure Rancher Desktop with `registries.yaml` instead.
 - **Jenkins requires Java 21 (mandatory since LTS 2.555.1).** Use `jenkins/jenkins:2.555.3-lts-jdk21`. Any older image or tutorial that skips this will fail.
-- **Registry name-parity is the #1 local blocker.** `localhost:5000` on the host ≠ `localhost:5000` inside the Rancher Desktop VM. Solve this in Phase 1 before writing a single Jenkinsfile.
+- **Registry name-parity is the #1 local blocker** — and `registries.yaml` is NOT the fix when using the dockerd engine. Rancher Desktop with dockerd (moby) routes k8s image pulls through `cri-dockerd` → Docker daemon, which ignores `/etc/rancher/k3s/registries.yaml` entirely. The fix is `insecure-registries` in `/etc/docker/daemon.json` inside the VM, applied via a provisioning script (`cluster/insecure-registry.start`) that survives RD restarts. Push from host always via `localhost:5001`; pod image refs use `host.rancher-desktop.internal:5001`.
 - **Kyverno (4 policies) is added to the scope.** It fills the GitOps admission-control layer that was implicitly required but unnamed in the original requirements. YAML policies are more legible than Rego for a thesis committee.
 - **Falco legacy eBPF is deprecated in v0.44.0; `modern_ebpf` is the only viable driver.** This was already a project decision — confirmed and locked in.
 - **Component build order is non-negotiable:** registry → cluster → ArgoCD → demo app → Jenkins → Falco. Jenkins is the highest-risk component; it must not be introduced before a working manual deploy path exists to observe.
