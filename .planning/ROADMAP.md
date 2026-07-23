@@ -154,9 +154,11 @@ Plans:
 2. **Pitfall 8 — ImagePullBackOff after sync:** If the Kustomize patch references a tag that was never pushed, pods fail silently with `ErrImagePull` while ArgoCD reports `Synced`. Always verify the tag exists in the registry before committing: `curl http://host.rancher-desktop.internal:5000/v2/demoapp/tags/list`.
 3. **Pitfall 9 — False-degraded health status:** ArgoCD may mark the app `Degraded` during slow pod startup. Add `initialDelaySeconds: 15` to the readiness probe in the base manifest to avoid cascading health-check failures.
 
-**Plans:** TBD
+**Plans:** 2/2 plans complete
 
-**UI hint**: yes
+Plans:
+- [ ] 03-argocd-install-PLAN.md — ArgoCD install + Application CR + self-heal demo
+- [ ] 03-kyverno-policies-PLAN.md — Kyverno install + 4 policies + admission block demo
 
 ---
 
