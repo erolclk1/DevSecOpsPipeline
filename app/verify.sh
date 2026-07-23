@@ -55,7 +55,7 @@ fi
 
 # ── SC3: SQL injection proof ──────────────────────────────────────────────────
 info "SC3: Testing SQL injection endpoint..."
-SQLI_RESP=$(curl -sf --connect-timeout 5 \
+SQLI_RESP=$(curl -s --connect-timeout 5 \
   "http://localhost:${NODEPORT}/sqli?user=%27+OR+%271%27%3D%271" 2>/dev/null)
 if echo "${SQLI_RESP}" | grep -qE '"error"|"query"'; then
   ok "SC3: /sqli returned SQL error/query evidence — injection confirmed"
