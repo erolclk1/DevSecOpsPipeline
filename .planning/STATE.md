@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v3.4.4
 milestone_name: milestone
-current_phase: 3
+current_phase: 4
 status: on_track
-last_updated: "2026-07-23T00:00:00.000Z"
+last_updated: "2026-08-12T00:00:00.000Z"
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 3
+  total_plans: 6
+  completed_plans: 6
 ---
 
 # Project State
 
-**Last updated:** 2026-07-02
-**Current phase:** 3
+**Last updated:** 2026-08-12
+**Current phase:** 4
 **Overall status:** ON TRACK
 
 ---
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 
 **Core value:** Demonstrable, locally runnable pipeline where vulnerable container images are automatically blocked, secure images are deployed via GitOps, and cyberattacks are detected in real time — proving DevSecOps concepts work end-to-end.
 
-**Current focus:** Phase 3 — GitOps
+**Current focus:** Phase 4 — Jenkins CI
 
 ---
 
@@ -36,7 +36,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 |-------|------|--------|-------|
 | 1 | Bootstrap | Complete | Registry + k3s + name resolution (2026-07-09) |
 | 2 | Vulnerable App | Complete | demoapp:6af2848 deployed, 4/4 SC passed (2026-07-23) |
-| 3 | GitOps | Not started | ArgoCD + Kyverno |
+| 3 | GitOps | Complete | ArgoCD v3.4.4 + Kyverno v1.18.2, 10/10 SC passed (2026-08-12) |
 | 4 | Jenkins CI | Not started | JCasC + Trivy + manifest bump |
 | 5 | Runtime Security | Not started | Falco + Falcosidekick + attack scripts |
 | 6 | Demo Polish | Not started | Runbooks, Makefile, docs, diagram |
@@ -46,14 +46,14 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 ## Progress Bar
 
 ```
-Phase 1 [          ] 0%   Bootstrap
-Phase 2 [          ] 0%   Vulnerable App
-Phase 3 [          ] 0%   GitOps
-Phase 4 [          ] 0%   Jenkins CI
-Phase 5 [          ] 0%   Runtime Security
-Phase 6 [          ] 0%   Demo Polish
+Phase 1 [██████████] 100% Bootstrap
+Phase 2 [██████████] 100% Vulnerable App
+Phase 3 [██████████] 100% GitOps
+Phase 4 [          ]   0% Jenkins CI
+Phase 5 [          ]   0% Runtime Security
+Phase 6 [          ]   0% Demo Polish
 ────────────────────────────────────────
-Overall  [          ] 0%   0/6 phases complete
+Overall  [█████     ]  50% 3/6 phases complete
 ```
 
 ---
@@ -66,6 +66,9 @@ Overall  [          ] 0%   0/6 phases complete
 - [2026-07-02] Research complete: `STACK.md`, `FEATURES.md`, `ARCHITECTURE.md`, `PITFALLS.md`, `SUMMARY.md`
 - [2026-07-02] `REQUIREMENTS.md` defined: 37 v1 requirements across 6 phases
 - [2026-07-02] `ROADMAP.md` created: 6 phases, full requirement coverage (37/37), success criteria and key risks per phase
+- [2026-07-09] Phase 1 complete: registry:2 on port 5001, registries.yaml, k3s verified
+- [2026-07-23] Phase 2 complete: demoapp:6af2848 deployed, Trivy CRITICAL CVEs confirmed, SQLi + CMDi exploitable, 4/4 SC passed
+- [2026-08-12] Phase 3 complete: ArgoCD v3.4.4 Synced/Healthy, Kyverno v1.18.2 with 4 ClusterPolicies, :latest blocked, no sync loop, 10/10 SC passed
 
 ---
 
@@ -163,7 +166,7 @@ To resume this project in a new session:
 2. Read `.planning/REQUIREMENTS.md` — 37 v1 requirements with phase assignments
 3. Read `.planning/ROADMAP.md` — 6 phases, tasks, success criteria, key risks
 4. Read this file (`.planning/STATE.md`) — current position, decisions, open questions
-5. Resume at: **Phase 1 — Bootstrap**
+5. Resume at: **Phase 4 — Jenkins CI**
 
 The full research context is in `.planning/research/`: `STACK.md`, `FEATURES.md`, `ARCHITECTURE.md`, `PITFALLS.md`, `SUMMARY.md`.
 
@@ -171,7 +174,7 @@ The full research context is in `.planning/research/`: `STACK.md`, `FEATURES.md`
 
 ## Next Action
 
-Run `/gsd:plan-phase 1` to plan Phase 1: Bootstrap
+Run `/gsd:plan-phase 4` to plan Phase 4: Jenkins CI
 
 ---
 

@@ -10,7 +10,7 @@
 
 - [x] **Phase 1: Bootstrap** — Registry + k3s cluster + host-to-VM name resolution verified end-to-end (completed 2026-07-09)
 - [x] **Phase 2: Vulnerable App** — Demo app with deterministic vulnerabilities built, pushed, and deployed via raw `kubectl apply` (completed 2026-07-23)
-- [ ] **Phase 3: GitOps** — ArgoCD auto-syncs from Git; Kyverno enforces admission policies; no direct cluster writes
+- [x] **Phase 3: GitOps** — ArgoCD auto-syncs from Git; Kyverno enforces admission policies; no direct cluster writes (completed 2026-08-12)
 - [ ] **Phase 4: Jenkins CI** — JCasC-driven pipeline automates build → Trivy scan → push → manifest bump without human involvement
 - [ ] **Phase 5: Runtime Security** — Falco detects all three attack patterns; Falcosidekick persists alerts to file and webui
 - [ ] **Phase 6: Demo Polish** — Three scenarios run from a Makefile; full stack reproduces on a clean machine from docs alone
@@ -157,8 +157,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 03-argocd-install-PLAN.md — ArgoCD install + Application CR + self-heal demo
-- [ ] 03-kyverno-policies-PLAN.md — Kyverno install + 4 policies + admission block demo
+- [x] 03-argocd-install-PLAN.md — ArgoCD install + Application CR + self-heal demo
+- [x] 03-kyverno-policies-PLAN.md — Kyverno install + 4 policies + admission block demo
 
 ---
 
@@ -283,9 +283,9 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Bootstrap | 0/2 | Complete    | 2026-07-09 |
-| 2. Vulnerable App | 1/2 | In Progress|  |
-| 3. GitOps | 0/0 | Not started | — |
+| 1. Bootstrap | 2/2 | Complete    | 2026-07-09 |
+| 2. Vulnerable App | 2/2 | Complete | 2026-07-23 |
+| 3. GitOps | 2/2 | Complete    | 2026-08-12 |
 | 4. Jenkins CI | 0/0 | Not started | — |
 | 5. Runtime Security | 0/0 | Not started | — |
 | 6. Demo Polish | 0/0 | Not started | — |
@@ -312,12 +312,12 @@ Plans:
 | CI-05 | Phase 4: Jenkins CI | Pending |
 | CI-06 | Phase 4: Jenkins CI | Pending |
 | CI-07 | Phase 4: Jenkins CI | Pending |
-| GITOPS-01 | Phase 3: GitOps | Pending |
-| GITOPS-02 | Phase 3: GitOps | Pending |
-| GITOPS-03 | Phase 3: GitOps | Pending |
-| GITOPS-04 | Phase 3: GitOps | Pending |
-| GITOPS-05 | Phase 3: GitOps | Pending |
-| GITOPS-06 | Phase 3: GitOps | Pending |
+| GITOPS-01 | Phase 3: GitOps | Complete |
+| GITOPS-02 | Phase 3: GitOps | Complete |
+| GITOPS-03 | Phase 3: GitOps | Complete |
+| GITOPS-04 | Phase 3: GitOps | Complete |
+| GITOPS-05 | Phase 3: GitOps | Complete |
+| GITOPS-06 | Phase 3: GitOps | Complete |
 | FALCO-01 | Phase 5: Runtime Security | Pending |
 | FALCO-02 | Phase 5: Runtime Security | Pending |
 | FALCO-03 | Phase 5: Runtime Security | Pending |
