@@ -22,7 +22,7 @@ SHELL := /bin/bash
         argocd-install kyverno-install \
         demo-1 demo-2 demo-3 \
         registry-start registry-stop \
-        falco-install jenkins-start \
+        falco-install phase-4 jenkins-stop \
         reset-jenkins teardown-argocd teardown-falco teardown-kyverno
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -159,32 +159,19 @@ teardown-kyverno:
 
 # ── Phase 4: Jenkins CI ───────────────────────────────────────────────────────
 
-## Start Jenkins with JCasC
-jenkins-start:
-	@echo "── Starting Jenkins ─────────────────────────────────────────────────"
-	@if docker ps --format '{{.Names}}' | grep -q '^jenkins$$'; then \
-		echo "✓ Jenkins already running at http://localhost:$(JENKINS_PORT)"; \
-	else \
-		docker rm -f jenkins 2>/dev/null || true; \
-		docker run -d --name jenkins \
-			-p $(JENKINS_PORT):8080 \
-			-p 50000:50000 \
-			-v jenkins_home:/var/jenkins_home \
-			-v ~/.rd/docker.sock:/var/run/docker.sock \
-			-e CASC_JENKINS_CONFIG=/var/jenkins_home/casc.yaml \
-			$(JENKINS_IMAGE); \
-		echo "✓ Jenkins started at http://localhost:$(JENKINS_PORT)"; \
-	fi
+## Phase 4: build + start Jenkins (controller + agent) from docker-compose + JCasC
+phase-4:
+	@docker compose -f ci/docker-compose.yml up -d --build
+	@echo "✓ Jenkins starting at http://localhost:$(JENKINS_PORT) (JCasC, no wizard)"
+	@echo "  Verify: bash ci/smoke-test.sh && bash ci/tests/verify-jcasc.sh"
 
-## Stop Jenkins
+## Stop Jenkins (keep volumes)
 jenkins-stop:
-	@docker rm -f jenkins 2>/dev/null && echo "✓ Jenkins stopped" || echo "  Jenkins was not running"
+	@docker compose -f ci/docker-compose.yml down 2>/dev/null && echo "✓ Jenkins stopped" || echo "  Jenkins was not running"
 
-## Wipe Jenkins and reprovision from JCasC
-reset-jenkins: jenkins-stop
-	@docker volume rm jenkins_home 2>/dev/null || true
-	@$(MAKE) jenkins-start
-	@echo "✓ Jenkins reset — reprovision from JCasC"
+## Wipe Jenkins volumes and reprovision from JCasC
+reset-jenkins:
+	@bash ci/jenkins-reset.sh
 
 # ── Phase 5: Falco ────────────────────────────────────────────────────────────
 
