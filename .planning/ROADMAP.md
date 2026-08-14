@@ -194,7 +194,13 @@ Plans:
 2. **Pitfall 5 — First green run takes 4–6 hours:** Every pipeline failure requires a container restart cycle. Mitigate: use JCasC from day 1, iterate the Jenkinsfile with the `Replay` button (5 s feedback vs 90 s SCM poll), keep `jenkins-reset.sh` ready for clean reprovisioning.
 3. **Pitfall 10 — Trivy DB download failures:** GHCR rate limits or offline network break scans silently (exit 0, 0 CVEs). Configure persistent cache volume and `TRIVY_DB_REPOSITORY` fallback before first run; smoke-test with `vulnerables/web-dvwa` — if Trivy reports clean on it, the DB is broken.
 
-**Plans:** TBD
+**Plans:** 4 plans in 4 waves
+
+Plans:
+- [ ] 04-test-scaffolds-PLAN.md — Wave 1: fixed Dockerfile variant + Wave 0 test scaffolds (scenario-1/2, verify-jcasc, smoke-test)
+- [ ] 04-jenkins-provision-PLAN.md — Wave 2: JCasC controller + docker-builder agent + pinned plugins.txt + docker-compose (CI-01, CI-07)
+- [ ] 04-pipeline-jenkinsfile-PLAN.md — Wave 3: 4-stage Jenkinsfile (BUILD/SCAN/PUSH/BUMP) + reset + Makefile phase-4 (CI-02..CI-06)
+- [ ] 04-scenario-verification-PLAN.md — Wave 4: checkpoint — run both scenarios end-to-end, verify ArgoCD deploy + reset reproducibility
 
 ---
 
@@ -286,7 +292,7 @@ Plans:
 | 1. Bootstrap | 2/2 | Complete    | 2026-07-09 |
 | 2. Vulnerable App | 2/2 | Complete | 2026-07-23 |
 | 3. GitOps | 2/2 | Complete    | 2026-08-12 |
-| 4. Jenkins CI | 0/0 | Not started | — |
+| 4. Jenkins CI | 0/4 | Planned | — |
 | 5. Runtime Security | 0/0 | Not started | — |
 | 6. Demo Polish | 0/0 | Not started | — |
 
