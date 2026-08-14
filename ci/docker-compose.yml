@@ -1,0 +1,41 @@
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: controller.Dockerfile
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc.yaml
+      - TZ=UTC
+    env_file:
+      - .env
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ./jcasc/jenkins.yaml:/var/jenkins_home/casc.yaml:ro
+      # NO docker socket on the controller (GitOps boundary + attack surface)
+
+  agent:
+    build:
+      context: .
+      dockerfile: agent.Dockerfile
+    container_name: jenkins-agent
+    depends_on:
+      - jenkins
+    environment:
+      - JENKINS_URL=http://jenkins:8080
+      - JENKINS_AGENT_NAME=docker-builder
+      - TZ=UTC
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # WSL2 default; see RESEARCH Pitfall 1
+      - trivy_cache:/home/jenkins/.trivy-cache
+      - agent_work:/home/jenkins/agent
+
+volumes:
+  jenkins_home: {}
+  trivy_cache: {}
+  agent_work: {}
