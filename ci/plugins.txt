@@ -1,0 +1,12 @@
+configuration-as-code:2117.vc05a_0b_e6b_f4e
+workflow-aggregator:608.v67378e9d3db_1
+job-dsl:3732.v9a_c49a_61a_313
+pipeline-stage-view:2.41
+docker-workflow:653.v2f2c08eff0ec
+credentials:1511.v2e3cb_0008ef0
+credentials-binding:728.v902a_273b_8947
+git:5.10.1
+git-client:6.6.1
+timestamper:1.30
+ansicolor:542.v03d235fee02d
+matrix-auth:3.3
