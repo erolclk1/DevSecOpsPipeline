@@ -23,7 +23,8 @@ SHELL := /bin/bash
         demo-1 demo-2 demo-3 \
         registry-start registry-stop \
         falco-install phase-4 jenkins-stop \
-        reset-jenkins teardown-argocd teardown-falco teardown-kyverno
+        reset-jenkins verify-jenkins verify-phase-4 \
+        teardown-argocd teardown-falco teardown-kyverno
 
 # ── Config ────────────────────────────────────────────────────────────────────
 REGISTRY_PORT    := 5001
@@ -163,7 +164,24 @@ teardown-kyverno:
 phase-4:
 	@docker compose -f ci/docker-compose.yml up -d --build
 	@echo "✓ Jenkins starting at http://localhost:$(JENKINS_PORT) (JCasC, no wizard)"
-	@echo "  Verify: bash ci/smoke-test.sh && bash ci/tests/verify-jcasc.sh"
+	@echo "  Waiting for Jenkins to boot (~60s)..."
+	@sleep 10
+	@bash ci/smoke-test.sh
+
+## Quick Jenkins health + JCasC parity check
+verify-jenkins:
+	@bash ci/smoke-test.sh
+	@bash ci/tests/verify-jcasc.sh
+
+## Run all Phase 4 success criteria (smoke + JCasC + both scenarios)
+verify-phase-4:
+	@echo "── Phase 4 Verification ─────────────────────────────────────────────"
+	@bash ci/smoke-test.sh
+	@bash ci/tests/verify-jcasc.sh
+	@bash ci/tests/scenario-1.sh
+	@bash ci/tests/scenario-2.sh
+	@echo ""
+	@echo "✓ Phase 4 verification complete"
 
 ## Stop Jenkins (keep volumes)
 jenkins-stop:
@@ -200,29 +218,15 @@ teardown-falco:
 
 # ── Demo scenarios ────────────────────────────────────────────────────────────
 
-## Demo 1: Blocked build — Trivy blocks vulnerable image
+## Demo 1: Blocked build — Trivy blocks vulnerable image (automated)
 demo-1:
 	@echo "── Demo Scenario 1: Blocked Build ───────────────────────────────────"
-	@echo "Trigger a Jenkins build with the vulnerable Dockerfile."
-	@echo "Expected: Trivy SCAN stage fails, image NOT pushed to registry."
-	@echo ""
-	@echo "Steps:"
-	@echo "  1. Open Jenkins at http://localhost:$(JENKINS_PORT)"
-	@echo "  2. Trigger pipeline on 'main' branch (uses vulnerable base image)"
-	@echo "  3. Watch SCAN stage — should go red"
-	@echo "  4. Confirm no new tag: curl http://$(REGISTRY_HOST):$(REGISTRY_PORT)/v2/demoapp/tags/list"
+	@bash ci/tests/scenario-1.sh
 
-## Demo 2: Successful deploy — fixed image goes through full pipeline
+## Demo 2: Successful deploy — fixed image goes through full pipeline (automated)
 demo-2:
 	@echo "── Demo Scenario 2: Successful Deploy ───────────────────────────────"
-	@echo "Trigger Jenkins build on 'fixed' branch."
-	@echo "Expected: Trivy passes, ArgoCD syncs, pod updated."
-	@echo ""
-	@echo "Steps:"
-	@echo "  1. Trigger Jenkins pipeline on 'fixed' branch"
-	@echo "  2. Watch all 4 stages go green"
-	@echo "  3. Check ArgoCD UI — Application syncs automatically"
-	@echo "  4. Confirm new pod version: kubectl get pods -n demoapp"
+	@bash ci/tests/scenario-2.sh
 
 ## Demo 3: Live attack — Falco detects reverse shell and sensitive file access
 demo-3:
