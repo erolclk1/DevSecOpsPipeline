@@ -197,7 +197,7 @@ Plans:
 **Plans:** 4 plans in 4 waves
 
 Plans:
-- [ ] 04-test-scaffolds-PLAN.md — Wave 1: fixed Dockerfile variant + Wave 0 test scaffolds (scenario-1/2, verify-jcasc, smoke-test)
+- [x] 04-test-scaffolds-PLAN.md — Wave 1: fixed Dockerfile variant + Wave 0 test scaffolds (scenario-1/2, verify-jcasc, smoke-test)
 - [ ] 04-jenkins-provision-PLAN.md — Wave 2: JCasC controller + docker-builder agent + pinned plugins.txt + docker-compose (CI-01, CI-07)
 - [ ] 04-pipeline-jenkinsfile-PLAN.md — Wave 3: 4-stage Jenkinsfile (BUILD/SCAN/PUSH/BUMP) + reset + Makefile phase-4 (CI-02..CI-06)
 - [ ] 04-scenario-verification-PLAN.md — Wave 4: checkpoint — run both scenarios end-to-end, verify ArgoCD deploy + reset reproducibility

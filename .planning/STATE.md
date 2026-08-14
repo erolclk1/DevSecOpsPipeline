@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.4.4
 milestone_name: milestone
 current_phase: 04
-status: unknown
-last_updated: "2026-08-14T13:24:30.823Z"
+status: on_track
+last_updated: "2026-08-14T13:42:48.518Z"
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 10
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Project State
@@ -69,6 +69,7 @@ Overall  [█████     ]  50% 3/6 phases complete
 - [2026-07-09] Phase 1 complete: registry:2 on port 5001, registries.yaml, k3s verified
 - [2026-07-23] Phase 2 complete: demoapp:6af2848 deployed, Trivy CRITICAL CVEs confirmed, SQLi + CMDi exploitable, 4/4 SC passed
 - [2026-08-12] Phase 3 complete: ArgoCD v3.4.4 Synced/Healthy, Kyverno v1.18.2 with 4 ClusterPolicies, :latest blocked, no sync loop, 10/10 SC passed
+- [2026-08-14] Phase 4 Plan 04-test-scaffolds complete: Wave 0 CI validation harness (Dockerfile.fixed + smoke-test.sh + verify-jcasc.sh + scenario-1/2.sh); CI-03/04/05 requirements marked; scripts run later on Windows target
 
 ---
 
