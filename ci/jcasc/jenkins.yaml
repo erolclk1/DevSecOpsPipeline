@@ -1,0 +1,56 @@
+jenkins:
+  systemMessage: "DevSecOps thesis pipeline — provisioned entirely by JCasC"
+  numExecutors: 0          # controller runs no builds; all work goes to the agent
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_USER}"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+  nodes:
+    - permanent:
+        name: "docker-builder"
+        labelString: "docker-builder"
+        remoteFS: "/home/jenkins/agent"
+        retentionStrategy: "always"
+        launcher:
+          inbound:
+            workDirSettings:
+              disabled: false
+              workDirPath: "/home/jenkins/agent"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - string:
+              scope: GLOBAL
+              id: "github-token"
+              secret: "${GITHUB_TOKEN}"
+              description: "GitHub PAT for BUMP stage push to main"
+
+unclassified:
+  location:
+    url: "http://localhost:8080/"
+
+jobs:
+  - script: |
+      pipelineJob('demoapp-pipeline') {
+        parameters {
+          stringParam('DOCKERFILE', 'Dockerfile', 'Dockerfile to build: Dockerfile (vulnerable) or Dockerfile.fixed (patched)')
+        }
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote { url('https://github.com/erolclk1/DevSecOpsPipeline.git') }
+                branch('main')
+              }
+            }
+            scriptPath('Jenkinsfile')
+          }
+        }
+      }
