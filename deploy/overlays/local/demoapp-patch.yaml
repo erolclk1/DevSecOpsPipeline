@@ -8,4 +8,4 @@ spec:
     spec:
       containers:
         - name: demoapp
-          image: host.rancher-desktop.internal:5001/demoapp:6af2848
+          image: host.rancher-desktop.internal:5001/demoapp:4c9f1f5
