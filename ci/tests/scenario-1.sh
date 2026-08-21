@@ -5,6 +5,16 @@
 # Exits non-zero unless the build FAILED and the registry is unchanged.
 set -euo pipefail
 
+# Load Jenkins admin credentials from project ci/.env
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+if [ -f "${PROJECT_ROOT}/ci/.env" ]; then
+  set -a
+  source "${PROJECT_ROOT}/ci/.env"
+  set +a
+fi
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -36,9 +46,55 @@ echo "tags before: ${BEFORE}"
 echo "current git SHA: ${SHA}"
 
 # ── 2. Trigger the vulnerable build (DOCKERFILE=Dockerfile) ───────────────────
-curl -sf -X POST -u "$AUTH" \
-  "${JENKINS}/job/${JOB}/buildWithParameters?DOCKERFILE=Dockerfile" \
-  || die "could not trigger ${JOB} build (is Jenkins up and the job seeded?)"
+COOKIE_JAR="$(mktemp)"
+trap 'rm -f "${COOKIE_JAR}" /tmp/jenkins-trigger-response' EXIT
+
+CRUMB_JSON=$(curl -sf \
+  -c "${COOKIE_JAR}" \
+  -u "${AUTH}" \
+  "${JENKINS}/crumbIssuer/api/json" \
+  || die "could not obtain Jenkins CSRF crumb")
+
+CRUMB_FIELD=$(printf '%s' "${CRUMB_JSON}" \
+  | sed -n 's/.*"crumbRequestField":"\([^"]*\)".*/\1/p')
+
+CRUMB=$(printf '%s' "${CRUMB_JSON}" \
+  | sed -n 's/.*"crumb":"\([^"]*\)".*/\1/p')
+
+[ -n "${CRUMB_FIELD}" ] \
+  || die "could not parse Jenkins crumb field: ${CRUMB_JSON}"
+
+[ -n "${CRUMB}" ] \
+  || die "could not parse Jenkins crumb: ${CRUMB_JSON}"
+
+echo "Jenkins crumb field: ${CRUMB_FIELD}"
+
+HTTP_CODE=$(curl -sS \
+  -b "${COOKIE_JAR}" \
+  -c "${COOKIE_JAR}" \
+  -o /tmp/jenkins-trigger-response \
+  -w '%{http_code}' \
+  -X POST \
+  -u "${AUTH}" \
+  -H "${CRUMB_FIELD}: ${CRUMB}" \
+  --data-urlencode "${CRUMB_FIELD}=${CRUMB}" \
+  --data-urlencode "DOCKERFILE=Dockerfile" \
+  "${JENKINS}/job/${JOB}/buildWithParameters" \
+  || true)
+
+if [ "${HTTP_CODE}" != "201" ] && [ "${HTTP_CODE}" != "200" ]; then
+  echo "Jenkins trigger HTTP status: ${HTTP_CODE}"
+  echo "Jenkins response:"
+  cat /tmp/jenkins-trigger-response
+  echo
+  echo "Jenkins crumb response:"
+  echo "${CRUMB_JSON}"
+  echo
+  echo "Jenkins cookies:"
+  cat "${COOKIE_JAR}"
+  die "could not trigger ${JOB} build"
+fi
+
 ok "triggered vulnerable build"
 
 # ── 3. Poll lastBuild until it has a result (timeout 10 min) ──────────────────

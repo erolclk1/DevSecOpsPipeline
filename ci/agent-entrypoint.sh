@@ -7,6 +7,30 @@ set -euo pipefail
 : "${JENKINS_ADMIN_USER:?JENKINS_ADMIN_USER is required}"
 : "${JENKINS_ADMIN_PASSWORD:?JENKINS_ADMIN_PASSWORD is required}"
 
+# ── Docker socket access ──────────────────────────────────────────────────────
+# The socket is mounted from the host, so its GID may differ from the
+# docker group GID baked into the agent image.
+if [[ -S /var/run/docker.sock ]]; then
+  DOCKER_GID="$(stat -c '%g' /var/run/docker.sock)"
+
+  if [[ "${DOCKER_GID}" = "0" ]]; then
+    usermod -aG root jenkins
+  else
+    if getent group docker >/dev/null 2>&1; then
+      EXISTING_DOCKER_GID="$(getent group docker | cut -d: -f3)"
+
+      if [[ "${EXISTING_DOCKER_GID}" != "${DOCKER_GID}" ]]; then
+        groupdel docker
+        groupadd -g "${DOCKER_GID}" docker
+      fi
+    else
+      groupadd -g "${DOCKER_GID}" docker
+    fi
+
+    usermod -aG docker jenkins
+  fi
+fi
+
 echo "Waiting for controller at ${JENKINS_URL} ..."
 until curl -sf -o /dev/null "${JENKINS_URL}/login"; do sleep 3; done
 

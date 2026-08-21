@@ -9,12 +9,15 @@ pipeline {
     TRIVY_CACHE = "/home/jenkins/.trivy-cache"
     HOST_REG    = "localhost:5001"
     CLUSTER_REG = "host.rancher-desktop.internal:5001"
-    GIT_SHA     = ""
   }
   stages {
     stage('BUILD') {
       steps {
-        script { env.GIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim() }
+        script {
+          env.GIT_SHA = env.GIT_COMMIT.take(7)
+          echo "GIT_COMMIT=${env.GIT_COMMIT}"
+          echo "GIT_SHA=${env.GIT_SHA}"
+        }
         sh 'docker build -f app/${DOCKERFILE} -t ${HOST_REG}/demoapp:${GIT_SHA} app/'
       }
     }
