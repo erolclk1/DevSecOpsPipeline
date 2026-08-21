@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v3.4.4
 milestone_name: milestone
-current_phase: 04
+current_phase: 05
 status: on_track
-last_updated: "2026-08-14T13:42:48.518Z"
+last_updated: "2026-08-21T00:00:00.000Z"
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 10
 ---
 
 # Project State
 
-**Last updated:** 2026-08-12
-**Current phase:** 04
+**Last updated:** 2026-08-21
+**Current phase:** 05
 **Overall status:** ON TRACK
 
 ---
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 
 **Core value:** Demonstrable, locally runnable pipeline where vulnerable container images are automatically blocked, secure images are deployed via GitOps, and cyberattacks are detected in real time — proving DevSecOps concepts work end-to-end.
 
-**Current focus:** Phase 04 — Jenkins CI
+**Current focus:** Phase 05 — Runtime Security
 
 ---
 
@@ -37,7 +37,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 | 1 | Bootstrap | Complete | Registry + k3s + name resolution (2026-07-09) |
 | 2 | Vulnerable App | Complete | demoapp:6af2848 deployed, 4/4 SC passed (2026-07-23) |
 | 3 | GitOps | Complete | ArgoCD v3.4.4 + Kyverno v1.18.2, 10/10 SC passed (2026-08-12) |
-| 4 | Jenkins CI | Not started | JCasC + Trivy + manifest bump |
+| 4 | Jenkins CI | Complete | JCasC + Trivy gate + GitOps bump, both scenarios green (2026-08-21) |
 | 5 | Runtime Security | Not started | Falco + Falcosidekick + attack scripts |
 | 6 | Demo Polish | Not started | Runbooks, Makefile, docs, diagram |
 
@@ -49,11 +49,11 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 Phase 1 [██████████] 100% Bootstrap
 Phase 2 [██████████] 100% Vulnerable App
 Phase 3 [██████████] 100% GitOps
-Phase 4 [          ]   0% Jenkins CI
+Phase 4 [██████████] 100% Jenkins CI
 Phase 5 [          ]   0% Runtime Security
 Phase 6 [          ]   0% Demo Polish
 ────────────────────────────────────────
-Overall  [█████     ]  50% 3/6 phases complete
+Overall  [██████▌   ]  67% 4/6 phases complete
 ```
 
 ---
@@ -70,6 +70,7 @@ Overall  [█████     ]  50% 3/6 phases complete
 - [2026-07-23] Phase 2 complete: demoapp:6af2848 deployed, Trivy CRITICAL CVEs confirmed, SQLi + CMDi exploitable, 4/4 SC passed
 - [2026-08-12] Phase 3 complete: ArgoCD v3.4.4 Synced/Healthy, Kyverno v1.18.2 with 4 ClusterPolicies, :latest blocked, no sync loop, 10/10 SC passed
 - [2026-08-14] Phase 4 Plan 04-test-scaffolds complete: Wave 0 CI validation harness (Dockerfile.fixed + smoke-test.sh + verify-jcasc.sh + scenario-1/2.sh); CI-03/04/05 requirements marked; scripts run later on Windows target
+- [2026-08-21] Phase 4 complete: Jenkins 2.555.3-lts-jdk21 via JCasC, docker-builder agent with Trivy v0.72.0 + yq v4, 4-stage Jenkinsfile (BUILD/SCAN/PUSH/BUMP), Scenario 1 (vulnerable image blocked at SCAN) and Scenario 2 (fixed image deployed via ArgoCD) both verified on Windows/Rancher Desktop target. 7/7 CI requirements met.
 
 ---
 
@@ -91,7 +92,7 @@ Overall  [█████     ]  50% 3/6 phases complete
 
 ## Blockers
 
-None — ready to start Phase 1.
+None — Phase 4 complete. Ready to start Phase 5.
 
 ---
 
@@ -108,12 +109,23 @@ Sourced from `research/SUMMARY.md`. Each must be answered during the indicated p
 | 5 | PostgreSQL vs SQLite for demo app? | Phase 2 | PostgreSQL enables a credential-access Falco scenario but adds ~150 MB RAM; SQLite is sufficient for SQL injection demonstration |
 | 6 | Current Falco chart: does `driver.kind=auto` auto-select `modern_ebpf` or still try kmod first? | Phase 5 | Even if auto works, pin explicitly for reproducibility; determines whether the default chart is safe to use |
 | 7 | Falcosidekick chart values key stability in chart 9.1.0 (e.g. `webui.enabled` vs `webui.create`)? | Phase 5 | Key names occasionally renamed between chart minor versions; verify with `helm show values falcosecurity/falco --version 9.1.0` before writing Helm command |
-| 8 | Exact Trivy DB registry URL for `TRIVY_DB_REPOSITORY` fallback in 2026 | Phase 4 | `ghcr.io/aquasecurity/trivy-db` vs `public.ecr.aws/aquasecurity/trivy-db` — verify with `trivy --help` before committing JCasC config |
+| 8 | ~~Exact Trivy DB registry URL for `TRIVY_DB_REPOSITORY` fallback in 2026~~ | **RESOLVED (Phase 4)** | Default primary is `mirror.gcr.io/aquasec/trivy-db`; ECR fallback `public.ecr.aws/aquasecurity/trivy-db` valid. |
 | 9 | ArgoCD v3.4 default: Server-Side Apply on or off? | Phase 3 | Affects `ignoreDifferences` mitigation for Kyverno-induced sync loops; check ArgoCD v3.4 release notes |
 
 ---
 
 ## Accumulated Context
+
+### Phase 4 empirical findings (confirmed on Windows/WSL2 target, 2026-08-21)
+
+- **Docker socket is `/var/run/docker.sock`** on Windows/WSL2 with Rancher Desktop dockerd engine — NOT `~/.rd/docker.sock` (that is macOS/lima only). Compose mount for the agent is `/var/run/docker.sock:/var/run/docker.sock`.
+- **Dynamic GID fixup required in entrypoint**: the socket's GID at container runtime differs from what was baked into the agent image. `ci/agent-entrypoint.sh` detects the actual GID at startup via `stat -c '%g' /var/run/docker.sock` and creates/re-creates the `docker` group with that GID before exec-ing the agent.
+- **Docker static binary** (`docker-28.3.3.tgz` from download.docker.com) used in the agent image instead of the `docker.io` Debian package — the apt package caused issues on this setup.
+- **Jenkins CSRF crumb required for `buildWithParameters`**: simple `curl -X POST` gets HTTP 403. Scripts must first `GET /crumbIssuer/api/json` with a cookie jar, extract `crumbRequestField` + `crumb`, then POST with the header + cookie.
+- **Queue item tracking** in scenario-2.sh: trigger returns a `Location:` header with the queue item URL; poll that URL until `"number"` appears, then track that specific build number — avoids `lastBuild` race conditions.
+- **`package.fixed.json` / `package-lock.fixed.json`**: the fixed Dockerfile uses separate package files renamed on COPY (`COPY package.fixed.json ./package.json`) so `npm ci` runs cleanly. express@4.22.2 + mysql@2.18.1 have no HIGH/CRITICAL npm CVEs.
+- **OS-layer CVEs in `node:22-alpine`**: 8 Alpine package CVEs (busybox, musl, libssl etc.) with no upstream fix land in `.trivyignore`. These are NOT npm issues — the npm tree is clean. The `.trivyignore` + `--ignorefile` pattern is the standard DevSecOps "accepted risk" documentation approach.
+- **`[skip ci]` confirmed working**: BUMP commits do not re-trigger the pipeline. Git log shows Jenkins BUMP commits (`ci: bump demoapp to <sha> [skip ci]`) followed by silence — no infinite loop.
 
 ### Architecture decisions confirmed by research
 
@@ -152,10 +164,9 @@ myProject/
 
 ## Todos
 
-- [ ] Start Phase 1: verify Rancher Desktop 1.23.1 install + registry + registries.yaml
-- [ ] Resolve Open Question 1: confirm exact hostname inside VM before writing any Jenkinsfile
-- [ ] Resolve Open Question 3: document k3s minor version in PROJECT.md after Phase 1
-- [ ] Decide Node.js vs Python for demo app (Open Question 4) at Phase 2 start; update PROJECT.md Key Decisions
+- [ ] Start Phase 5: install Falco 0.44.1 via `helm upgrade --install` with `driver.kind=modern_ebpf`
+- [ ] Resolve Open Question 6: confirm `driver.kind=auto` behavior on Rancher Desktop before first Falco install
+- [ ] Resolve Open Question 7: verify Falcosidekick chart key names in chart 9.1.0 before writing Helm command
 
 ---
 
@@ -167,7 +178,7 @@ To resume this project in a new session:
 2. Read `.planning/REQUIREMENTS.md` — 37 v1 requirements with phase assignments
 3. Read `.planning/ROADMAP.md` — 6 phases, tasks, success criteria, key risks
 4. Read this file (`.planning/STATE.md`) — current position, decisions, open questions
-5. Resume at: **Phase 4 — Jenkins CI**
+5. Resume at: **Phase 5 — Runtime Security**
 
 The full research context is in `.planning/research/`: `STACK.md`, `FEATURES.md`, `ARCHITECTURE.md`, `PITFALLS.md`, `SUMMARY.md`.
 
@@ -175,7 +186,7 @@ The full research context is in `.planning/research/`: `STACK.md`, `FEATURES.md`
 
 ## Next Action
 
-Run `/gsd:plan-phase 4` to plan Phase 4: Jenkins CI
+Run `/gsd:plan-phase 5` to plan Phase 5: Runtime Security (Falco + Falcosidekick + attack scripts)
 
 ---
 

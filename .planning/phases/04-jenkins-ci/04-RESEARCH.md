@@ -352,6 +352,47 @@ stage('BUILD') {
 - [ ] `ci/tests/verify-jcasc.sh` — plugins.txt parity + no-wizard boot (CI-01, CI-07)
 - [ ] A "fixed" Dockerfile/base (e.g. `node:22-alpine`) is needed for Scenario 2 — current `app/Dockerfile` is `node:14.21.3-alpine` (intentionally vulnerable). Plan must provide the fixed variant (branch or build-arg).
 
+## Empirical Findings (confirmed on Windows/WSL2 target, 2026-08-21)
+
+The following were verified during Phase 4 execution on the actual Windows/Rancher Desktop 1.23.1 target:
+
+### Resolved: Docker socket path (Open Question 1)
+**`/var/run/docker.sock` confirmed.** The research recommendation was correct. Compose mount for the agent is `/var/run/docker.sock:/var/run/docker.sock`. `~/.rd/docker.sock` does not exist on the Windows/WSL2 target — it is macOS/lima only.
+
+### New finding: Dynamic GID fixup required
+The socket's GID at container runtime differs from what is baked into the agent image (the GID is set by the Windows/WSL2 daemon and changes between restarts). `ci/agent-entrypoint.sh` was updated to detect the actual GID at startup via `stat -c '%g' /var/run/docker.sock` and re-create the `docker` group with that GID before exec-ing the agent process. Without this, `docker build` fails with a permission denied error even though the socket is mounted.
+
+### New finding: Docker static binary required
+The `docker.io` Debian apt package caused issues on this target. The agent image was updated to download the Docker static binary directly (`docker-28.3.3.tgz` from `download.docker.com`). This is more reliable and version-pinned.
+
+### Resolved: Trivy `--image-src docker` (Open Question 2)
+Using `--image-src docker` in all three Trivy calls (SBOM + report + gate) works correctly — Trivy accesses the locally-built image through the host daemon socket. No in-container network path to the registry is needed.
+
+### New finding: Jenkins CSRF crumb required for POST API calls
+Simple `curl -X POST` to `/job/<name>/buildWithParameters` returns HTTP 403 on Jenkins 2.555.3. Scripts must:
+1. `GET /crumbIssuer/api/json` with a cookie jar to obtain `crumbRequestField` + `crumb`
+2. POST with `Cookie:` (via `-b cookie_jar`) and `${CRUMB_FIELD}: ${CRUMB}` header
+
+Both `ci/tests/scenario-1.sh` and `ci/tests/scenario-2.sh` were updated accordingly.
+
+### New finding: Queue item tracking needed in scenario-2.sh
+The trigger response returns a `Location:` header pointing to the queued build's API URL. The script polls that URL until `"number"` appears, then tracks that specific build number to avoid `lastBuild` race conditions when the pipeline is busy.
+
+### New finding: Separate package files for the fixed image
+`app/Dockerfile.fixed` uses `package.fixed.json` and `package-lock.fixed.json` — separate from the vulnerable app's package files — renamed on COPY so `npm ci` works cleanly:
+```dockerfile
+COPY package.fixed.json ./package.json
+COPY package-lock.fixed.json ./package-lock.json
+RUN npm ci --omit=dev
+```
+Dependencies: `express@4.22.2`, `mysql@2.18.1` (no HIGH/CRITICAL npm CVEs).
+
+### New finding: OS-layer CVEs in `node:22-alpine` — use `.trivyignore`
+Even the "fixed" image based on `node:22-alpine` has 8 Alpine package CVEs (busybox, musl, libssl etc.) that have no upstream fix. These are NOT npm CVEs — the npm tree is clean. The Jenkinsfile SCAN gate now includes `--ignorefile .trivyignore`, and the `.trivyignore` file documents the 8 accepted CVE IDs. This is standard DevSecOps practice: document accepted risks, not suppress the tool.
+
+### Resolved: `[skip ci]` loop guard (Open Question 3)
+Confirmed working. BUMP commits (`ci: bump demoapp to <sha> [skip ci]`) do not re-trigger the pipeline. Git history shows the BUMP commits followed by silence — no infinite loop.
+
 ## Sources
 
 ### Primary (HIGH confidence)

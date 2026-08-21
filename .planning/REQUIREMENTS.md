@@ -24,13 +24,13 @@
 
 ### CI Pipeline (Jenkins + Trivy)
 
-- [ ] **CI-01**: Jenkins LTS 2.555.3 (JDK 21) running as Docker container with JCasC configuration loaded from `ci/jcasc/jenkins.yaml`
-- [ ] **CI-02**: Jenkins pipeline has BUILD stage: `docker build` tagged with git short SHA (never `:latest`)
+- [x] **CI-01**: Jenkins LTS 2.555.3 (JDK 21) running as Docker container with JCasC configuration loaded from `ci/jcasc/jenkins.yaml`
+- [x] **CI-02**: Jenkins pipeline has BUILD stage: `docker build` tagged with git short SHA (never `:latest`)
 - [x] **CI-03**: Jenkins pipeline has SCAN stage: Trivy `--severity HIGH,CRITICAL --ignore-unfixed --exit-code 1`; pipeline fails and image is NOT pushed when CVEs found
 - [x] **CI-04**: Jenkins pipeline has PUSH stage: image pushed to `host.rancher-desktop.internal:5000/demoapp:<sha>` only after Trivy passes
 - [x] **CI-05**: Jenkins pipeline has BUMP stage: updates `deploy/overlays/local/demoapp-patch.yaml` image tag via `yq`, commits, and pushes to Git (never `kubectl apply`)
-- [ ] **CI-06**: Trivy SBOM output (`--format cyclonedx`) archived as build artefact per run
-- [ ] **CI-07**: Jenkins plugin list pinned in `plugins.txt` with explicit versions; plugins installed via JCasC `plugins.txt` (reproducible)
+- [x] **CI-06**: Trivy SBOM output (`--format cyclonedx`) archived as build artefact per run
+- [x] **CI-07**: Jenkins plugin list pinned in `plugins.txt` with explicit versions; plugins installed via JCasC `plugins.txt` (reproducible)
 
 ### GitOps Deployment (ArgoCD + Kyverno)
 
@@ -126,13 +126,13 @@ Differentiators — add only after v1 is stable and demo scenarios are rehearsed
 | APP-03 | Phase 2: Manual Deploy | Complete |
 | APP-04 | Phase 2: Manual Deploy | Complete |
 | APP-05 | Phase 6: Polish | Pending |
-| CI-01 | Phase 4: Jenkins CI | Pending |
-| CI-02 | Phase 4: Jenkins CI | Pending |
+| CI-01 | Phase 4: Jenkins CI | Complete |
+| CI-02 | Phase 4: Jenkins CI | Complete |
 | CI-03 | Phase 4: Jenkins CI | Complete |
 | CI-04 | Phase 4: Jenkins CI | Complete |
 | CI-05 | Phase 4: Jenkins CI | Complete |
-| CI-06 | Phase 4: Jenkins CI | Pending |
-| CI-07 | Phase 4: Jenkins CI | Pending |
+| CI-06 | Phase 4: Jenkins CI | Complete |
+| CI-07 | Phase 4: Jenkins CI | Complete |
 | GITOPS-01 | Phase 3: GitOps | Pending |
 | GITOPS-02 | Phase 3: GitOps | Pending |
 | GITOPS-03 | Phase 3: GitOps | Pending |
