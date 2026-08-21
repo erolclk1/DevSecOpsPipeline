@@ -1,0 +1,16 @@
+# .trivyignore — accepted CVEs for the fixed (Scenario 2) image
+#
+# These are OS-layer CVEs from node:22-alpine that have no upstream fix
+# yet available in Alpine, or are accepted risks for this thesis demo.
+#
+# To find CVEs to add here, run on the Windows/Rancher Desktop target:
+#
+#   trivy image --severity HIGH,CRITICAL --ignore-unfixed \
+#     --scanners vuln localhost:5001/demoapp:<fixed-sha>
+#
+# Copy any CVE-IDs from the OS rows (Library = busybox/musl/ssl/etc.)
+# and add them below. npm-package CVEs should be fixed in package.fixed.json instead.
+#
+# Example:
+# CVE-2023-5678
+# CVE-2024-1234

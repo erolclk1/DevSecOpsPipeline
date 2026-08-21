@@ -34,6 +34,7 @@ pipeline {
         sh '''
           trivy image --image-src docker --severity HIGH,CRITICAL --ignore-unfixed \
             --exit-code 1 --scanners vuln --no-progress \
+            --ignorefile .trivyignore \
             --cache-dir "$TRIVY_CACHE" ${HOST_REG}/demoapp:${GIT_SHA}
         '''
       }
