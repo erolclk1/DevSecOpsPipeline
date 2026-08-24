@@ -14,7 +14,7 @@ requirements: [FALCO-02, FALCO-04, FALCO-05, ATK-01, ATK-02, ATK-03]
 
 must_haves:
   truths:
-    - "A single command (make verify-phase-5) installs Falco, runs all 3 attacks, and asserts named alerts within 30s"
+    - "A single command (make verify-phase-5) installs Falco and runs all 3 attacks; for ATK-02/ATK-03 it asserts named Falco alerts within 30 seconds, and for ATK-01 it asserts sqli.py exits 0 deterministically (proof of SQL injection data extraction — no Falco alert is expected, because the SQL runs inside the Node.js process, not as a detectable syscall/spawn)"
     - "Alerts persist to /var/log/falco/events.log on the node and survive a Falco pod restart"
     - "A full Jenkins->ArgoCD cycle produces ZERO demo-tagged Falco alerts (namespace scoping verified)"
     - "logs/falco.log can be copied out of the WSL2 VM for viewing without committing runtime logs to git"
@@ -88,6 +88,9 @@ demo-3 wiring, and a green run on the target.
   copy is a convenience. `logs/falco.log` MUST be gitignored (runtime artifact).
 - Pitfall 6: falcosidekick UI service is release-prefixed -> `falco-falcosidekick-ui`, not `falcosidekick-ui`.
 - Success criterion 6: zero alerts during a normal Jenkins->ArgoCD cycle proves namespace scoping.
+- ATK-01 has NO Falco detection rule: SQL injection executes within the Node.js process (string concat
+  into a query), producing no detectable syscall/process-spawn. The verify script asserts `sqli.py exit 0`
+  only (deterministic proof of data extraction) — it does NOT assert a Falco alert for ATK-01.
 </research_corrections>
 </context>
 
@@ -160,13 +163,15 @@ demo-3 wiring, and a green run on the target.
     Steps (each an assertion; accumulate PASS/FAIL; exit 1 if any FAIL at the end):
 
     1. INSTALL/DRIVER (FALCO-01): call `bash falco/verify-rules-loaded.sh` and require exit 0
-       (pod Running, modern_ebpf, 5 rules, no parse errors). Fail the suite if it fails.
+       (pod Running, modern_ebpf, 6 rule definitions, no parse errors). Fail the suite if it fails.
     2. WEBUI (FALCO-02): `kubectl get svc falco-falcosidekick-ui -n falco` succeeds (service exists).
     3. Define a helper `assert_alert_within_30s "<Rule Name>"` that:
        - records `START=$(date +%s)`, then loops up to 30s polling
          `kubectl logs -n falco -l app.kubernetes.io/name=falco --since=60s | grep -F "<Rule Name>"`;
        - `ok` if found within 30s, `fail` otherwise.
-    4. ATK-01 (sqli): `python3 attacks/sqli.py` exits 0 (it is its own assertion).
+    4. ATK-01 (sqli): `python3 attacks/sqli.py` exits 0 (it is its own assertion). NO Falco alert is
+       expected for ATK-01 — SQL injection runs inside the Node.js process, so there is no detectable
+       syscall/spawn. Assert exit 0 ONLY; do NOT call assert_alert_within_30s for this attack.
     5. ATK-02 (reverse shell): `bash attacks/reverse_shell.sh`, then
        `assert_alert_within_30s "Shell Spawned by Web App in demoapp"` AND
        `assert_alert_within_30s "Reverse Shell Tool in demoapp"`.
@@ -201,7 +206,7 @@ demo-3 wiring, and a green run on the target.
     - Zero-alert scoping check present: `grep -Eq "kube-system|argocd" falco/verify-phase5.sh`
     - Correct UI service name: `grep -q "falco-falcosidekick-ui" falco/verify-phase5.sh`
   </acceptance_criteria>
-  <done>falco/verify-phase5.sh valid+executable, chains rules-load check + 3 attacks + 30s alert assertions + persistence-after-restart + namespace-scope check, exits non-zero on any failure.</done>
+  <done>falco/verify-phase5.sh valid+executable, chains rules-load check + 3 attacks + 30s alert assertions (ATK-02/ATK-03 only) + sqli exit-0 assertion (ATK-01, no alert) + persistence-after-restart + namespace-scope check, exits non-zero on any failure.</done>
 </task>
 
 <task type="checkpoint:human-verify" gate="blocking">
@@ -215,10 +220,10 @@ demo-3 wiring, and a green run on the target.
     the runtime proof cannot happen during authoring).
   </action>
   <what-built>
-    Falco 0.44.1 values (modern_ebpf + json/file output + webui), 5 namespace-scoped custom rules,
-    three attack scripts, and a full verification suite (falco/verify-phase5.sh). Everything below is
-    automated by the scripts — this checkpoint confirms it actually works on the real target, since all
-    Phase 5 runtime execution happens on Windows/Rancher Desktop (macOS is code-only).
+    Falco 0.44.1 values (modern_ebpf + json/file output + webui), 6 namespace-scoped custom rule
+    definitions, three attack scripts, and a full verification suite (falco/verify-phase5.sh). Everything
+    below is automated by the scripts — this checkpoint confirms it actually works on the real target, since
+    all Phase 5 runtime execution happens on Windows/Rancher Desktop (macOS is code-only).
   </what-built>
   <how-to-verify>
     Run these on the Windows/WSL2 Rancher Desktop target, in order:
@@ -234,10 +239,10 @@ demo-3 wiring, and a green run on the target.
     3. INSTALL: `make phase-5` — wait for the Falco pod to reach Running (NOT CrashLoopBackOff):
        `kubectl get pods -n falco -w`.
     4. RULES LOADED: `bash falco/verify-rules-loaded.sh` — expect exit 0, "modern_ebpf"/"Falco initialized",
-       all 5 rule names, zero parse errors.
+       all 6 rule names, zero parse errors.
     5. FULL SUITE: `make verify-phase-5` (runs falco/verify-phase5.sh). Expect a green PASS summary:
-       sqli exit 0; reverse-shell fires "Shell Spawned by Web App" + "Reverse Shell Tool" within 30s;
-       privilege-probe fires "Read Sensitive File" + "Package Management" within 30s; the node
+       sqli exit 0 (no alert expected); reverse-shell fires "Shell Spawned by Web App" + "Reverse Shell Tool"
+       within 30s; privilege-probe fires "Read Sensitive File" + "Package Management" within 30s; the node
        events.log survives a Falco pod restart; zero demo alerts from kube-system/argocd/falco.
     6. WEBUI: `kubectl port-forward svc/falco-falcosidekick-ui -n falco 2802:2802` then open
        http://localhost:2802 — confirm >=3 distinct named alerts are visible.
@@ -270,9 +275,9 @@ webui >=3 alerts, log persists across restart, zero alerts during a normal pipel
 </verification>
 
 <success_criteria>
-- falco/verify-phase5.sh chains rules-load + 3 attacks + 30s assertions + persistence + scope check
+- falco/verify-phase5.sh chains rules-load + 3 attacks + 30s assertions (ATK-02/ATK-03) + sqli exit-0 (ATK-01, no alert) + persistence + scope check
 - logs/.gitkeep tracked; logs/falco.log gitignored; demo-3 runs all 3 attacks + copies log out; verify-phase-5 target present
-- On target: Falco Running (modern_ebpf), 5 rules loaded, >=3 named alerts within 30s, log persists across pod restart, zero alerts in normal ops
+- On target: Falco Running (modern_ebpf), 6 rules loaded, >=3 named alerts within 30s, log persists across pod restart, zero alerts in normal ops
 </success_criteria>
 
 <output>

@@ -17,17 +17,17 @@ must_haves:
     - "Falco installs with the modern_ebpf driver (never auto/kmod) and does not CrashLoop"
     - "Falco emits structured JSON alerts to kubectl logs in real time"
     - "Alerts persist to /var/log/falco/events.log on the node via Falco core file_output"
-    - "5 custom rules load with zero parse errors"
+    - "6 custom rule definitions load with zero parse errors (5 requirement rules; FALCO-03 reverse-shell is fulfilled by TWO rules, 1a Reverse Shell Tool + 1b Stdio to Network)"
     - "Every custom rule only matches the demoapp namespace/image (zero alerts from kube-system/argocd/falco)"
   artifacts:
     - path: "falco/values.yaml"
       provides: "Helm values: modern_ebpf driver, json+file output, hostPath mount, falcosidekick webui, inlined customRules"
       contains: "driver:"
     - path: "falco/rules/custom-rules.yaml"
-      provides: "5 namespace-scoped detection rules + in_demoapp macro (source of truth)"
+      provides: "6 namespace-scoped detection rule definitions + in_demoapp macro (source of truth)"
       contains: "in_demoapp"
     - path: "falco/verify-rules-loaded.sh"
-      provides: "Wave 0 test: greps Falco startup logs for the 5 rule names + zero parse errors"
+      provides: "Wave 0 test: greps Falco startup logs for the 6 rule names + zero parse errors"
   key_links:
     - from: "falco/values.yaml"
       to: "falco/rules/custom-rules.yaml"
@@ -40,7 +40,7 @@ must_haves:
 ---
 
 <objective>
-Author the Falco 0.44.1 deployment configuration and the 5 namespace-scoped custom
+Author the Falco 0.44.1 deployment configuration and the 6 namespace-scoped custom
 detection rules for the demoapp container, plus a fast rules-load verification script.
 
 Purpose: This plan produces the runtime-detection control layer (the third thesis
@@ -181,7 +181,7 @@ assertions run on the Windows/WSL2 Rancher Desktop target — see Plan 05-03.
 </task>
 
 <task type="auto">
-  <name>Task 2: Author the 5 namespace-scoped custom rules and inline them into values.yaml</name>
+  <name>Task 2: Author the 6 namespace-scoped custom rules and inline them into values.yaml</name>
   <files>falco/rules/custom-rules.yaml, falco/values.yaml</files>
   <read_first>
     - falco/rules/custom-rules.yaml (if it exists — otherwise you are creating it)
@@ -191,7 +191,14 @@ assertions run on the Windows/WSL2 Rancher Desktop target — see Plan 05-03.
   </read_first>
   <action>
     Create `falco/rules/custom-rules.yaml` as the human-editable SOURCE OF TRUTH with EXACTLY
-    these lists + macro + 5 rules (from RESEARCH.md Code Examples; firing validated on target in Plan 05-03):
+    these lists + macro + 6 rule definitions (from RESEARCH.md Code Examples; firing validated on
+    target in Plan 05-03).
+
+    NOTE ON COUNT: there are 5 FALCO detection REQUIREMENTS but 6 rule definitions, because the
+    single reverse-shell detection requirement FALCO-03 is fulfilled by TWO complementary rules —
+    1a "Reverse Shell Tool in demoapp" (fires on the nc/socat execve) AND 1b "Stdio to Network in
+    demoapp" (fires on stdio duped to a socket). Both count as `- rule:` entries, so the file
+    contains 6 `- rule:` lines. This is intentional; the verify assertions below expect 6.
 
     ```yaml
     # Scope: only the vulnerable demo app. Self-contained where practical.
@@ -209,7 +216,7 @@ assertions run on the Windows/WSL2 Rancher Desktop target — see Plan 05-03.
     - list: pkg_mgmt
       items: [apk, apt, apt-get, dpkg, npm, pip, pip3, yum, dnf]
 
-    # 1a. reverse-shell: network tool spawned (fires on execve; no socket connection needed)
+    # 1a. reverse-shell (FALCO-03): network tool spawned (fires on execve; no socket connection needed)
     - rule: Reverse Shell Tool in demoapp
       desc: Netcat/socat-style tool launched inside the demo app container
       condition: spawned_process and in_demoapp and proc.name in (reverse_shell_tools)
@@ -217,7 +224,7 @@ assertions run on the Windows/WSL2 Rancher Desktop target — see Plan 05-03.
       priority: CRITICAL
       tags: [demo, T1059]
 
-    # 1b. reverse-shell: stdio duped onto a network socket (classic pattern)
+    # 1b. reverse-shell (FALCO-03): stdio duped onto a network socket (classic pattern)
     - rule: Stdio to Network in demoapp
       desc: A process redirected stdin/stdout/stderr to a network socket
       condition: >
@@ -276,16 +283,16 @@ assertions run on the Windows/WSL2 Rancher Desktop target — see Plan 05-03.
     Do NOT add any `fd.sip != "127.0.0.1"` exclusion (Pitfall 3). Do NOT edit `falco_rules.yaml`.
   </action>
   <verify>
-    <automated>python3 -c "import yaml; docs=list(yaml.safe_load_all(open('falco/rules/custom-rules.yaml'))); print('parsed docs ok')" && test $(grep -c "^- rule:" falco/rules/custom-rules.yaml) -eq 5 && python3 -c "import yaml; v=yaml.safe_load(open('falco/values.yaml')); c=v['customRules']['custom-rules.yaml']; assert c.count('- rule:')==5, c.count('- rule:'); assert 'in_demoapp' in c; print('values customRules has 5 rules, in sync')"</automated>
+    <automated>python3 -c "import yaml; docs=list(yaml.safe_load_all(open('falco/rules/custom-rules.yaml'))); print('parsed docs ok')" && test $(grep -c "^- rule:" falco/rules/custom-rules.yaml) -eq 6 && python3 -c "import yaml; v=yaml.safe_load(open('falco/values.yaml')); c=v['customRules']['custom-rules.yaml']; assert c.count('- rule:')==6, c.count('- rule:'); assert 'in_demoapp' in c; print('values customRules has 6 rules, in sync')"</automated>
   </verify>
   <acceptance_criteria>
-    - `test $(grep -c "^- rule:" falco/rules/custom-rules.yaml) -eq 5` (exactly 5 rules)
-    - `grep -q "in_demoapp" falco/rules/custom-rules.yaml` and each rule condition contains `in_demoapp` (FALCO-04 scoping): `test $(grep -c "and in_demoapp\|demo_outbound and in_demoapp" falco/rules/custom-rules.yaml) -ge 5`
-    - Rule names present: `grep -q "Reverse Shell Tool in demoapp"`, `grep -q "Shell Spawned by Web App in demoapp"`, `grep -q "Read Sensitive File in demoapp"`, `grep -q "Package Management in demoapp"`, `grep -q "Contact K8s API Server from demoapp"` all succeed
+    - `test $(grep -c "^- rule:" falco/rules/custom-rules.yaml) -eq 6` (exactly 6 rule definitions — 5 requirement rules; FALCO-03 reverse-shell = rules 1a+1b)
+    - `grep -q "in_demoapp" falco/rules/custom-rules.yaml` and each rule condition contains `in_demoapp` (FALCO-04 scoping): `test $(grep -c "and in_demoapp\|demo_outbound and in_demoapp\|in_demoapp and" falco/rules/custom-rules.yaml) -ge 6`
+    - Rule names present: `grep -q "Reverse Shell Tool in demoapp"`, `grep -q "Stdio to Network in demoapp"`, `grep -q "Shell Spawned by Web App in demoapp"`, `grep -q "Read Sensitive File in demoapp"`, `grep -q "Package Management in demoapp"`, `grep -q "Contact K8s API Server from demoapp"` all succeed
     - `! grep -q '127.0.0.1' falco/rules/custom-rules.yaml` (no loopback exclusion — Pitfall 3)
-    - Python assertion confirms values.yaml customRules block contains exactly 5 rules and `in_demoapp` (files in sync)
+    - Python assertion confirms values.yaml customRules block contains exactly 6 rules and `in_demoapp` (files in sync)
   </acceptance_criteria>
-  <done>falco/rules/custom-rules.yaml has 5 namespace-scoped rules; identical content inlined under customRules in values.yaml; no loopback exclusion.</done>
+  <done>falco/rules/custom-rules.yaml has 6 namespace-scoped rule definitions (5 requirement rules; FALCO-03 reverse-shell = rules 1a+1b); identical content inlined under customRules in values.yaml; no loopback exclusion.</done>
 </task>
 
 <task type="auto">
@@ -293,7 +300,7 @@ assertions run on the Windows/WSL2 Rancher Desktop target — see Plan 05-03.
   <files>falco/verify-rules-loaded.sh</files>
   <read_first>
     - app/verify.sh (match the ok/fail/info color-helper convention + PASS/FAIL counters)
-    - falco/rules/custom-rules.yaml (source of the 5 rule names to assert)
+    - falco/rules/custom-rules.yaml (source of the 6 rule names to assert)
     - .planning/phases/05-runtime-security/05-RESEARCH.md (section "Validation Architecture" -> Wave 0 Gaps; Testing Strategy commands)
   </read_first>
   <action>
@@ -305,7 +312,7 @@ assertions run on the Windows/WSL2 Rancher Desktop target — see Plan 05-03.
     3. Capture startup logs once: `LOGS=$(kubectl logs -n falco "$POD" 2>&1)`.
     4. Assert driver: `echo "$LOGS" | grep -Eq "modern_ebpf|Falco initialized"` (FALCO-01).
     5. Assert ZERO parse errors: `echo "$LOGS" | grep -Eiq "unknown macro|unknown list|Error|rule .* has an invalid"` must be FALSE (fail if any match).
-    6. Assert all 5 rule names appear as loaded. Falco logs each loaded rule; grep the log for each of the 5 exact rule names (define them in a bash array): "Reverse Shell Tool in demoapp", "Stdio to Network in demoapp", "Shell Spawned by Web App in demoapp", "Read Sensitive File in demoapp", "Package Management in demoapp", "Contact K8s API Server from demoapp". (That is 6 rule strings — 1a/1b both count; assert at least the 5 requirement rules by name; missing any is a fail.)
+    6. Assert all 6 rule names appear as loaded. Falco logs each loaded rule; grep the log for each of the 6 exact rule names (define them in a bash array): "Reverse Shell Tool in demoapp", "Stdio to Network in demoapp", "Shell Spawned by Web App in demoapp", "Read Sensitive File in demoapp", "Package Management in demoapp", "Contact K8s API Server from demoapp". (That is the 6 rule definitions — reverse-shell FALCO-03 is 1a+1b; missing any is a fail.)
     7. Print a PASS/FAIL summary and `exit 1` if any check failed, `exit 0` if all pass.
 
     Use the same `RED/GREEN/YELLOW/NC` + `ok()/fail()/info()` helpers as app/verify.sh.
@@ -320,10 +327,10 @@ assertions run on the Windows/WSL2 Rancher Desktop target — see Plan 05-03.
     - `test -x falco/verify-rules-loaded.sh` (executable bit set)
     - `grep -q "modern_ebpf" falco/verify-rules-loaded.sh` (driver assertion present)
     - `grep -Eq "unknown macro|Error" falco/verify-rules-loaded.sh` (parse-error assertion present)
-    - All 5 rule-name strings present: `grep -q "Reverse Shell Tool in demoapp"`, `grep -q "Shell Spawned by Web App in demoapp"`, `grep -q "Read Sensitive File in demoapp"`, `grep -q "Package Management in demoapp"`, `grep -q "Contact K8s API Server from demoapp"` all succeed
+    - All 6 rule-name strings present: `grep -q "Reverse Shell Tool in demoapp"`, `grep -q "Stdio to Network in demoapp"`, `grep -q "Shell Spawned by Web App in demoapp"`, `grep -q "Read Sensitive File in demoapp"`, `grep -q "Package Management in demoapp"`, `grep -q "Contact K8s API Server from demoapp"` all succeed
     - Script contains `exit 1` on failure path and `exit 0` on success path
   </acceptance_criteria>
-  <done>falco/verify-rules-loaded.sh is valid, executable, asserts pod Running + modern_ebpf + zero parse errors + all 5 rule names loaded.</done>
+  <done>falco/verify-rules-loaded.sh is valid, executable, asserts pod Running + modern_ebpf + zero parse errors + all 6 rule names loaded.</done>
 </task>
 
 </tasks>
@@ -331,7 +338,7 @@ assertions run on the Windows/WSL2 Rancher Desktop target — see Plan 05-03.
 <verification>
 On macOS (authoring), all three tasks pass their `<automated>` checks:
 - `python3 -c "import yaml; ..."` validates values.yaml keys and rule sync
-- `grep -c "^- rule:" falco/rules/custom-rules.yaml` == 5
+- `grep -c "^- rule:" falco/rules/custom-rules.yaml` == 6
 - `bash -n falco/verify-rules-loaded.sh` clean
 
 On the Windows/WSL2 target (deferred to Plan 05-03): `make phase-5` then
@@ -340,9 +347,9 @@ On the Windows/WSL2 target (deferred to Plan 05-03): `make phase-5` then
 
 <success_criteria>
 - falco/values.yaml pins driver.kind=modern_ebpf, json_output+file_output on, mounts.volumes hostPath, falcosidekick.webui.enabled, customRules inlined
-- falco/rules/custom-rules.yaml has exactly 5 rules, all scoped with in_demoapp, no loopback exclusion
+- falco/rules/custom-rules.yaml has exactly 6 rule definitions (5 requirement rules; FALCO-03 = 1a+1b), all scoped with in_demoapp, no loopback exclusion
 - Makefile falco-install installs from `-f falco/values.yaml`; `make phase-5` alias exists
-- falco/verify-rules-loaded.sh valid + executable, asserts driver + zero parse errors + 5 rule names
+- falco/verify-rules-loaded.sh valid + executable, asserts driver + zero parse errors + 6 rule names
 </success_criteria>
 
 <output>
