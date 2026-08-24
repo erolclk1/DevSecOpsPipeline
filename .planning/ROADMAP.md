@@ -242,7 +242,12 @@ Plans:
 2. **Pitfall 6 — Custom rules too noisy:** Rules based only on `proc.name` fire on every `kubectl exec` debug session. Use layered conditions (`proc.name` + `fd.sip` + `container.image.repository`), scope all rules to `k8s.ns.name = "demoapp"`, and add TTY exceptions for interactive debug sessions.
 3. **Pitfall 16 — Falcosidekick webui unreachable during demo:** If the port-forward drops, the audience sees nothing. Configure file output as the primary sink (always works regardless of network); treat webui as secondary. Verify both before every demo rehearsal.
 
-**Plans:** TBD
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [ ] 05-falco-deploy-PLAN.md — Wave 1: Falco values.yaml (modern_ebpf + json/file output + webui) + 5 namespace-scoped custom rules + rules-load verifier (FALCO-01..05)
+- [ ] 05-attack-scripts-PLAN.md — Wave 1: sqli.py + reverse_shell.sh + privilege_probe.sh with ethical guards (ATK-01..04)
+- [ ] 05-integration-verify-PLAN.md — Wave 2: full verify-phase5 suite + logs persistence + demo-3 wiring + on-target checkpoint (FALCO-02/04/05, ATK-01..03)
 
 ---
 
@@ -293,7 +298,7 @@ Plans:
 | 2. Vulnerable App | 2/2 | Complete | 2026-07-23 |
 | 3. GitOps | 2/2 | Complete    | 2026-08-12 |
 | 4. Jenkins CI | 0/4 | Planned | — |
-| 5. Runtime Security | 0/0 | Not started | — |
+| 5. Runtime Security | 0/3 | Planned | — |
 | 6. Demo Polish | 0/0 | Not started | — |
 
 ---
