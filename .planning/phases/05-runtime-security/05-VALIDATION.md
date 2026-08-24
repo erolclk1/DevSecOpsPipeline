@@ -20,7 +20,7 @@ created: 2026-08-24
 | **Framework** | bash / shell (no test framework — infra/config phase) |
 | **Config file** | none — verification scripts created in Wave 1 |
 | **Quick run command** | `bash -n falco/rules/custom-rules.yaml 2>/dev/null \|\| yq '.' falco/rules/custom-rules.yaml > /dev/null` |
-| **Full suite command** | `bash attacks/verify-phase5.sh` (on-target Windows/WSL2 only) |
+| **Full suite command** | `bash falco/verify-phase5.sh` (on-target Windows/WSL2 only) |
 | **Estimated runtime** | ~120 seconds (on-target); ~5 seconds (syntax checks on macOS) |
 
 ---
@@ -44,7 +44,7 @@ created: 2026-08-24
 | 05-02-01 | attack-scripts | 1 | ATK-01, ATK-04 | syntax+guard | `python3 -c "import ast; ast.parse(open('attacks/sqli.py').read())"` | ❌ W0 | ⬜ pending |
 | 05-02-02 | attack-scripts | 1 | ATK-02, ATK-04 | syntax+guard | `bash -n attacks/reverse_shell.sh && grep -qi 'ATK-04\|ETHICAL\|Refusing non-local' attacks/reverse_shell.sh` | ❌ W0 | ⬜ pending |
 | 05-02-03 | attack-scripts | 1 | ATK-03, ATK-04 | syntax+guard | `bash -n attacks/privilege_probe.sh && grep -qi 'ATK-04\|ETHICAL\|Refusing non-local' attacks/privilege_probe.sh` | ❌ W0 | ⬜ pending |
-| 05-03-01 | integration-verify | 2 | FALCO-02, FALCO-04, FALCO-05 | script-syntax | `bash -n attacks/verify-phase5.sh` | ❌ W0 | ⬜ pending |
+| 05-03-01 | integration-verify | 2 | FALCO-02, FALCO-04, FALCO-05 | script-syntax | `bash -n falco/verify-phase5.sh` | ❌ W0 | ⬜ pending |
 | 05-03-02 | integration-verify | 2 | FALCO-01, ATK-01, ATK-02, ATK-03 | grep-check | `grep -q 'verify-phase-5\|verify-phase5' Makefile` | ❌ W0 | ⬜ pending |
 | 05-03-03 | integration-verify | 2 | ALL | manual | On-target checkpoint (see Manual-Only section) | N/A | ⬜ pending |
 
@@ -60,7 +60,7 @@ created: 2026-08-24
 - [ ] `attacks/sqli.py` — Wave 1 Plan 02 creates it
 - [ ] `attacks/reverse_shell.sh` — Wave 1 Plan 02 creates it
 - [ ] `attacks/privilege_probe.sh` — Wave 1 Plan 02 creates it
-- [ ] `attacks/verify-phase5.sh` — Wave 2 Plan 03 creates it
+- [ ] `falco/verify-phase5.sh` — Wave 2 Plan 03 creates it
 - [ ] `logs/.gitkeep` — ensures `logs/` directory is tracked by git
 
 *All files are created during Wave 1/2 execution — no pre-existing infrastructure needed for macOS authoring tasks.*
