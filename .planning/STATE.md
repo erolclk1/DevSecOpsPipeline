@@ -3,20 +3,20 @@ gsd_state_version: 1.0
 milestone: v3.4.4
 milestone_name: milestone
 current_phase: 05
-status: on_track
-last_updated: "2026-08-28T00:00:00.000Z"
+status: unknown
+last_updated: "2026-08-28T09:03:56.459Z"
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 3
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 9
 ---
 
 # Project State
 
-**Last updated:** 2026-08-28
+**Last updated:** 2026-08-21
 **Current phase:** 05
-**Overall status:** ON TRACK — Phase 5 in progress (plans 05-01 and 05-02 complete; 05-03 at checkpoint)
+**Overall status:** ON TRACK
 
 ---
 
@@ -38,7 +38,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 | 2 | Vulnerable App | Complete | demoapp:6af2848 deployed, 4/4 SC passed (2026-07-23) |
 | 3 | GitOps | Complete | ArgoCD v3.4.4 + Kyverno v1.18.2, 10/10 SC passed (2026-08-12) |
 | 4 | Jenkins CI | Complete | JCasC + Trivy gate + GitOps bump, both scenarios green (2026-08-21) |
-| 5 | Runtime Security | In Progress | Plans 05-01 (Falco deploy) + 05-02 (attack scripts) complete; 05-03 (verify) at human checkpoint |
+| 5 | Runtime Security | Not started | Falco + Falcosidekick + attack scripts |
 | 6 | Demo Polish | Not started | Runbooks, Makefile, docs, diagram |
 
 ---
@@ -50,10 +50,10 @@ Phase 1 [██████████] 100% Bootstrap
 Phase 2 [██████████] 100% Vulnerable App
 Phase 3 [██████████] 100% GitOps
 Phase 4 [██████████] 100% Jenkins CI
-Phase 5 [████▌     ]  45% Runtime Security (2/3 plans complete; 05-03 at checkpoint)
+Phase 5 [          ]   0% Runtime Security
 Phase 6 [          ]   0% Demo Polish
 ────────────────────────────────────────
-Overall  [███████   ]  73% 4/6 phases complete (Phase 5 in progress)
+Overall  [██████▌   ]  67% 4/6 phases complete
 ```
 
 ---
@@ -71,9 +71,6 @@ Overall  [███████   ]  73% 4/6 phases complete (Phase 5 in progres
 - [2026-08-12] Phase 3 complete: ArgoCD v3.4.4 Synced/Healthy, Kyverno v1.18.2 with 4 ClusterPolicies, :latest blocked, no sync loop, 10/10 SC passed
 - [2026-08-14] Phase 4 Plan 04-test-scaffolds complete: Wave 0 CI validation harness (Dockerfile.fixed + smoke-test.sh + verify-jcasc.sh + scenario-1/2.sh); CI-03/04/05 requirements marked; scripts run later on Windows target
 - [2026-08-21] Phase 4 complete: Jenkins 2.555.3-lts-jdk21 via JCasC, docker-builder agent with Trivy v0.72.0 + yq v4, 4-stage Jenkinsfile (BUILD/SCAN/PUSH/BUMP), Scenario 1 (vulnerable image blocked at SCAN) and Scenario 2 (fixed image deployed via ArgoCD) both verified on Windows/Rancher Desktop target. 7/7 CI requirements met.
-- [2026-08-28] Phase 5 Plan 05-01 complete: Falco 0.44.1 Helm values (`falco/values.yaml`) with `driver.kind=modern_ebpf`, JSON output, hostPath persistence (`/var/log/falco/events.log`), Falcosidekick+webui; 6 namespace-scoped custom rules in `falco/rules/custom-rules.yaml` + inlined into values; `falco/verify-rules-loaded.sh` smoke-test. Makefile `phase-5` / `falco-install` targets added.
-- [2026-08-28] Phase 5 Plan 05-02 complete: 3 attack PoC scripts — `attacks/sqli.py` (ATK-01, SQL injection, exits 0), `attacks/reverse_shell.sh` (ATK-02, cmd-injection reverse-shell trigger via /cmd NodePort), `attacks/privilege_probe.sh` (ATK-03, non-interactive kubectl exec: cat /etc/shadow + apk add). All include ATK-04 ethical guard (localhost/cluster only).
-- [2026-08-28] Phase 5 Plan 05-03 Tasks 1+2 complete: `logs/.gitkeep` + `logs/falco.log` gitignored; Makefile `demo-3` rewired (all 3 attacks + wsl log copy-out + `falco-falcosidekick-ui`); `verify-phase-5` target added; `falco/verify-phase5.sh` authored (8-step suite: rules-load + ATK-01/02/03 + 30s alert assertions + persistence-after-restart + namespace-scope check). Task 3 pending human-run on Windows target.
 
 ---
 
@@ -95,9 +92,7 @@ Overall  [███████   ]  73% 4/6 phases complete (Phase 5 in progres
 
 ## Blockers
 
-None — Phase 5 plans 05-01 and 05-02 complete. Plan 05-03 at human-verify checkpoint (Task 3).
-
-**Checkpoint required:** Run `make verify-phase-5` on Windows/WSL2 Rancher Desktop target and report results.
+None — Phase 4 complete. Ready to start Phase 5.
 
 ---
 
@@ -169,8 +164,9 @@ myProject/
 
 ## Todos
 
-- [ ] Run Phase 5 Plan 05-03 Task 3: `make verify-phase-5` on Windows/WSL2 Rancher Desktop target — report PASS/FAIL summary + webui alert count
-- [ ] After Task 3 approved: close Phase 5 and start Phase 6 (Demo Polish)
+- [ ] Start Phase 5: install Falco 0.44.1 via `helm upgrade --install` with `driver.kind=modern_ebpf`
+- [ ] Resolve Open Question 6: confirm `driver.kind=auto` behavior on Rancher Desktop before first Falco install
+- [ ] Resolve Open Question 7: verify Falcosidekick chart key names in chart 9.1.0 before writing Helm command
 
 ---
 
@@ -182,7 +178,7 @@ To resume this project in a new session:
 2. Read `.planning/REQUIREMENTS.md` — 37 v1 requirements with phase assignments
 3. Read `.planning/ROADMAP.md` — 6 phases, tasks, success criteria, key risks
 4. Read this file (`.planning/STATE.md`) — current position, decisions, open questions
-5. Resume at: **Phase 5 — Runtime Security, Plan 05-03 Task 3 (human-verify checkpoint)**
+5. Resume at: **Phase 5 — Runtime Security**
 
 The full research context is in `.planning/research/`: `STACK.md`, `FEATURES.md`, `ARCHITECTURE.md`, `PITFALLS.md`, `SUMMARY.md`.
 
@@ -190,9 +186,9 @@ The full research context is in `.planning/research/`: `STACK.md`, `FEATURES.md`
 
 ## Next Action
 
-Run `make verify-phase-5` on the Windows/WSL2 Rancher Desktop target (Plan 05-03 Task 3 checkpoint).
+Run `/gsd:plan-phase 5` to plan Phase 5: Runtime Security (Falco + Falcosidekick + attack scripts)
 
 ---
 
 *State initialized: 2026-07-02*
-*Last updated: 2026-08-28 after Phase 5 plans 05-01/02/03-partial completion*
+*Last updated: 2026-07-02 after roadmap creation*
