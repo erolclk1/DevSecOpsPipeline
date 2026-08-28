@@ -192,14 +192,12 @@ reset-jenkins:
 	@bash ci/jenkins-reset.sh
 
 # ── Phase 5: Falco ────────────────────────────────────────────────────────────
-
-## Phase 5: install Falco + run full verification suite (BTF gate → install → attacks → log copy-out)
 phase-5:
+	@mkdir -p logs
 	@echo "── Phase 5: Runtime Security ────────────────────────────────────────"
+	@echo ""
 	@echo "Step 1/4: BTF pre-check (modern_ebpf requires /sys/kernel/btf/vmlinux)"
-	@wsl -d rancher-desktop test -f /sys/kernel/btf/vmlinux 2>/dev/null && \
-		echo "✓ BTF vmlinux present" || \
-		(echo "✗ /sys/kernel/btf/vmlinux not found — run: wsl --update"; exit 1)
+	@wsl -d rancher-desktop -- sh -c "if test -f /sys/kernel/btf/vmlinux; then echo BTF_OK; else echo BTF_MISSING; exit 1; fi"
 	@echo ""
 	@echo "Step 2/4: Install Falco 0.44.1 (modern_ebpf)"
 	@$(MAKE) falco-install
@@ -208,8 +206,8 @@ phase-5:
 	@bash falco/verify-phase5.sh
 	@echo ""
 	@echo "Step 4/4: Copy Falco alert log out of WSL2 VM"
-	-@wsl -d rancher-desktop cat /var/log/falco/events.log > logs/falco.log 2>/dev/null && \
-		echo "✓ logs/falco.log updated ($(shell wc -l < logs/falco.log 2>/dev/null || echo 0) lines)" || \
+	-@wsl -d rancher-desktop -- sh -c "cat /var/log/falco/events.log" > logs/falco.log 2>/dev/null && \
+		echo "✓ logs/falco.log updated ($$(wc -l < logs/falco.log) lines)" || \
 		echo "  (wsl copy-out unavailable — log is in /var/log/falco/events.log inside the VM)"
 	@echo ""
 	@echo "✓ Phase 5 complete — Falco detecting attacks in real time"
