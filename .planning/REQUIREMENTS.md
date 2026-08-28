@@ -43,18 +43,18 @@
 
 ### Runtime Security (Falco)
 
-- [ ] **FALCO-01**: Falco 0.44.1 deployed as DaemonSet with `driver.kind=modern_ebpf` (explicit, not `auto`)
-- [ ] **FALCO-02**: Falcosidekick deployed with file output (`/var/log/falco/events.log` on host-mounted volume) and webui enabled
-- [ ] **FALCO-03**: 5 custom Falco rules loaded from `falco/rules/`: reverse shell, shell-spawned-by-webapp, read-sensitive-file, package-management-in-container, contact-k8s-api
-- [ ] **FALCO-04**: All custom rules scoped by `k8s.ns.name = "demoapp"` to prevent false positives from system namespaces
-- [ ] **FALCO-05**: `kubectl logs -f` on Falco DaemonSet shows structured JSON alerts in real time during attack demos
+- [x] **FALCO-01**: Falco 0.44.1 deployed as DaemonSet with `driver.kind=modern_ebpf` (explicit, not `auto`)
+- [x] **FALCO-02**: Falcosidekick deployed with file output (`/var/log/falco/events.log` on host-mounted volume) and webui enabled
+- [x] **FALCO-03**: 5 custom Falco rules loaded from `falco/rules/`: reverse shell, shell-spawned-by-webapp, read-sensitive-file, package-management-in-container, contact-k8s-api
+- [x] **FALCO-04**: All custom rules scoped by `k8s.ns.name = "demoapp"` to prevent false positives from system namespaces
+- [x] **FALCO-05**: `kubectl logs -f` on Falco DaemonSet shows structured JSON alerts in real time during attack demos
 
 ### Attack Simulation
 
-- [ ] **ATK-01**: `attacks/sqli.py` — SQL injection script that extracts data from demo app; deterministic, idempotent, only targets `localhost`
-- [ ] **ATK-02**: `attacks/reverse_shell.sh` — triggers command injection endpoint to open reverse shell; fires Falco reverse-shell and shell-from-webapp rules
-- [ ] **ATK-03**: `attacks/privilege_probe.sh` — `cat /etc/shadow`, `id`, `whoami`, `apk add curl` inside container; fires sensitive-file and package-management rules
-- [ ] **ATK-04**: All attack scripts hard-code `localhost`/cluster IP and include a safety comment documenting the ethical constraint
+- [x] **ATK-01**: `attacks/sqli.py` — SQL injection script that extracts data from demo app; deterministic, idempotent, only targets `localhost`
+- [x] **ATK-02**: `attacks/reverse_shell.sh` — triggers command injection endpoint to open reverse shell; fires Falco reverse-shell and shell-from-webapp rules
+- [x] **ATK-03**: `attacks/privilege_probe.sh` — `cat /etc/shadow`, `id`, `whoami`, `apk add curl` inside container; fires sensitive-file and package-management rules
+- [x] **ATK-04**: All attack scripts hard-code `localhost`/cluster IP and include a safety comment documenting the ethical constraint
 
 ### Demo Scenarios
 
@@ -139,15 +139,15 @@ Differentiators — add only after v1 is stable and demo scenarios are rehearsed
 | GITOPS-04 | Phase 3: GitOps | Pending |
 | GITOPS-05 | Phase 3: GitOps | Pending |
 | GITOPS-06 | Phase 3: GitOps | Pending |
-| FALCO-01 | Phase 5: Runtime Security | Pending |
-| FALCO-02 | Phase 5: Runtime Security | Pending |
-| FALCO-03 | Phase 5: Runtime Security | Pending |
-| FALCO-04 | Phase 5: Runtime Security | Pending |
-| FALCO-05 | Phase 5: Runtime Security | Pending |
-| ATK-01 | Phase 5: Runtime Security | Pending |
-| ATK-02 | Phase 5: Runtime Security | Pending |
-| ATK-03 | Phase 5: Runtime Security | Pending |
-| ATK-04 | Phase 5: Runtime Security | Pending |
+| FALCO-01 | Phase 5: Runtime Security | Complete |
+| FALCO-02 | Phase 5: Runtime Security | Complete |
+| FALCO-03 | Phase 5: Runtime Security | Complete |
+| FALCO-04 | Phase 5: Runtime Security | Complete |
+| FALCO-05 | Phase 5: Runtime Security | Complete |
+| ATK-01 | Phase 5: Runtime Security | Complete |
+| ATK-02 | Phase 5: Runtime Security | Complete |
+| ATK-03 | Phase 5: Runtime Security | Complete |
+| ATK-04 | Phase 5: Runtime Security | Complete |
 | DEMO-01 | Phase 6: Polish | Pending |
 | DEMO-02 | Phase 6: Polish | Pending |
 | DEMO-03 | Phase 6: Polish | Pending |
