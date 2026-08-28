@@ -193,8 +193,29 @@ reset-jenkins:
 
 # ── Phase 5: Falco ────────────────────────────────────────────────────────────
 
-## Phase 5: Falco runtime security (alias for falco-install)
-phase-5: falco-install
+## Phase 5: install Falco + run full verification suite (BTF gate → install → attacks → log copy-out)
+phase-5:
+	@echo "── Phase 5: Runtime Security ────────────────────────────────────────"
+	@echo "Step 1/4: BTF pre-check (modern_ebpf requires /sys/kernel/btf/vmlinux)"
+	@wsl -d rancher-desktop test -f /sys/kernel/btf/vmlinux 2>/dev/null && \
+		echo "✓ BTF vmlinux present" || \
+		(echo "✗ /sys/kernel/btf/vmlinux not found — run: wsl --update"; exit 1)
+	@echo ""
+	@echo "Step 2/4: Install Falco 0.44.1 (modern_ebpf)"
+	@$(MAKE) falco-install
+	@echo ""
+	@echo "Step 3/4: Full verification suite (rules-load + 3 attacks + 30s alert assertions)"
+	@bash falco/verify-phase5.sh
+	@echo ""
+	@echo "Step 4/4: Copy Falco alert log out of WSL2 VM"
+	-@wsl -d rancher-desktop cat /var/log/falco/events.log > logs/falco.log 2>/dev/null && \
+		echo "✓ logs/falco.log updated ($(shell wc -l < logs/falco.log 2>/dev/null || echo 0) lines)" || \
+		echo "  (wsl copy-out unavailable — log is in /var/log/falco/events.log inside the VM)"
+	@echo ""
+	@echo "✓ Phase 5 complete — Falco detecting attacks in real time"
+	@echo "  WebUI: kubectl port-forward svc/falco-falcosidekick-ui -n falco 2802:2802"
+	@echo "  Logs:  kubectl logs -f -n falco -l app.kubernetes.io/name=falco"
+	@echo "  File:  tail -20 logs/falco.log"
 
 ## Install Falco 0.44.1 with modern_ebpf
 falco-install:
