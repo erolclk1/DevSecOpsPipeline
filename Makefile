@@ -22,7 +22,7 @@ SHELL := /bin/bash
         argocd-install kyverno-install \
         demo-1 demo-2 demo-3 \
         registry-start registry-stop \
-        falco-install phase-4 jenkins-stop \
+        falco-install phase-5 phase-4 jenkins-stop \
         reset-jenkins verify-jenkins verify-phase-4 \
         teardown-argocd teardown-falco teardown-kyverno
 
@@ -193,6 +193,9 @@ reset-jenkins:
 
 # ── Phase 5: Falco ────────────────────────────────────────────────────────────
 
+## Phase 5: Falco runtime security (alias for falco-install)
+phase-5: falco-install
+
 ## Install Falco 0.44.1 with modern_ebpf
 falco-install:
 	@echo "── Installing Falco $(FALCO_VERSION) ────────────────────────────────"
@@ -201,11 +204,7 @@ falco-install:
 	helm upgrade --install falco falcosecurity/falco \
 		--version $(FALCO_VERSION) \
 		--namespace falco --create-namespace \
-		--set driver.kind=modern_ebpf \
-		--set tty=true \
-		--set falcosidekick.enabled=true \
-		--set falcosidekick.webui.enabled=true \
-		--set collectors.kubernetes.enabled=true \
+		-f falco/values.yaml \
 		--wait
 	@echo "✓ Falco installed"
 	@echo "  Logs:  kubectl logs -f -n falco -l app.kubernetes.io/name=falco"

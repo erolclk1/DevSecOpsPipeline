@@ -1,0 +1,36 @@
+# Source: falcosecurity/charts falco-9.1.0/values.yaml (verified 2026-08-24)
+driver:
+  kind: modern_ebpf          # FALCO-01: explicit, NEVER auto (no kmod fallback on RD VM)
+tty: true                    # FALCO-05: live flush so `kubectl logs -f` shows alerts immediately
+
+falco:
+  json_output: true          # FALCO-05: structured JSON (chart default is false)
+  file_output:               # FALCO-02: persistence via Falco CORE (Falcosidekick has no file sink)
+    enabled: true
+    keep_alive: false
+    filename: /var/log/falco/events.log
+  # falco.rules_files default already includes /etc/falco/rules.d (where customRules mount)
+
+mounts:                       # chart uses mounts.* keys (not the extra-volume chart keys)
+  volumes:
+    - name: falco-logs
+      hostPath:
+        path: /var/log/falco
+        type: DirectoryOrCreate
+  volumeMounts:
+    - name: falco-logs
+      mountPath: /var/log/falco
+
+collectors:
+  kubernetes:
+    enabled: true            # optional (adds k8smeta pod + ghcr dependency); keep true for richer metadata
+
+falcosidekick:
+  enabled: true
+  webui:
+    enabled: true            # FALCO-02: key is webui.enabled (chart 9.1.0 verified)
+
+customRules:
+  custom-rules.yaml: |-
+    # PLACEHOLDER — Task 2 inlines the exact content of falco/rules/custom-rules.yaml here.
+    # Keep 2-space indentation under this block scalar.
