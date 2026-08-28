@@ -1,3 +1,6 @@
 node_modules/
 .env.phase2
 ci/.env
+
+# Falco runtime alert log (copied out of the WSL2 VM at demo time)
+logs/falco.log

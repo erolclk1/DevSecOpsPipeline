@@ -23,7 +23,7 @@ SHELL := /bin/bash
         demo-1 demo-2 demo-3 \
         registry-start registry-stop \
         falco-install phase-5 phase-4 jenkins-stop \
-        reset-jenkins verify-jenkins verify-phase-4 \
+        reset-jenkins verify-jenkins verify-phase-4 verify-phase-5 \
         teardown-argocd teardown-falco teardown-kyverno
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -230,10 +230,17 @@ demo-2:
 ## Demo 3: Live attack — Falco detects reverse shell and sensitive file access
 demo-3:
 	@echo "── Demo Scenario 3: Live Attack Detected ────────────────────────────"
-	@bash attacks/reverse_shell.sh
-	@bash attacks/privilege_probe.sh
+	@python3 attacks/sqli.py || true
+	@bash attacks/reverse_shell.sh || true
+	@bash attacks/privilege_probe.sh || true
 	@echo ""
+	@echo "Copying Falco alert log out of the WSL2 VM..."
+	-@wsl -d rancher-desktop cat /var/log/falco/events.log > logs/falco.log 2>/dev/null || echo "  (run the copy-out manually on the target if wsl CLI is unavailable)"
 	@echo "Check Falco alerts:"
-	@echo "  Logs: kubectl logs -f -n falco -l app.kubernetes.io/name=falco | jq ."
-	@echo "  UI:   http://localhost:2802  (if port-forward is running)"
-	@echo "  File: cat logs/falco.log | tail -20"
+	@echo "  Logs: kubectl logs -f -n falco -l app.kubernetes.io/name=falco"
+	@echo "  UI:   kubectl port-forward svc/falco-falcosidekick-ui -n falco 2802:2802  (then http://localhost:2802)"
+	@echo "  File: tail -20 logs/falco.log"
+
+## Run Phase 5 end-to-end verification (requires Falco running + demoapp deployed)
+verify-phase-5:
+	@bash falco/verify-phase5.sh
