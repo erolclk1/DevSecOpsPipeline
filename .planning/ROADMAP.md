@@ -11,8 +11,8 @@
 - [x] **Phase 1: Bootstrap** — Registry + k3s cluster + host-to-VM name resolution verified end-to-end (completed 2026-07-09)
 - [x] **Phase 2: Vulnerable App** — Demo app with deterministic vulnerabilities built, pushed, and deployed via raw `kubectl apply` (completed 2026-07-23)
 - [x] **Phase 3: GitOps** — ArgoCD auto-syncs from Git; Kyverno enforces admission policies; no direct cluster writes (completed 2026-08-12)
-- [ ] **Phase 4: Jenkins CI** — JCasC-driven pipeline automates build → Trivy scan → push → manifest bump without human involvement
-- [ ] **Phase 5: Runtime Security** — Falco detects all three attack patterns; Falcosidekick persists alerts to file and webui
+- [x] **Phase 4: Jenkins CI** — JCasC-driven pipeline automates build → Trivy scan → push → manifest bump without human involvement (completed 2026-08-21)
+- [~] **Phase 5: Runtime Security** — Falco detects all three attack patterns; Falcosidekick persists alerts to file and webui (plans 05-01/02 complete; 05-03 Task 3 at human checkpoint 2026-08-28)
 - [ ] **Phase 6: Demo Polish** — Three scenarios run from a Makefile; full stack reproduces on a clean machine from docs alone
 
 ---
@@ -245,9 +245,9 @@ Plans:
 **Plans:** 3 plans in 2 waves
 
 Plans:
-- [ ] 05-falco-deploy-PLAN.md — Wave 1: Falco values.yaml (modern_ebpf + json/file output + webui) + 5 namespace-scoped custom rules + rules-load verifier (FALCO-01..05)
-- [ ] 05-attack-scripts-PLAN.md — Wave 1: sqli.py + reverse_shell.sh + privilege_probe.sh with ethical guards (ATK-01..04)
-- [ ] 05-integration-verify-PLAN.md — Wave 2: full verify-phase5 suite + logs persistence + demo-3 wiring + on-target checkpoint (FALCO-02/04/05, ATK-01..03)
+- [x] 05-falco-deploy-PLAN.md — Wave 1: Falco values.yaml (modern_ebpf + json/file output + webui) + 6 namespace-scoped custom rules + rules-load verifier (FALCO-01..05) — COMPLETE 2026-08-28
+- [x] 05-attack-scripts-PLAN.md — Wave 1: sqli.py + reverse_shell.sh + privilege_probe.sh with ethical guards (ATK-01..04) — COMPLETE 2026-08-28
+- [~] 05-integration-verify-PLAN.md — Wave 2: full verify-phase5 suite + logs persistence + demo-3 wiring + on-target checkpoint (FALCO-02/04/05, ATK-01..03) — Tasks 1+2 COMPLETE; Task 3 (human-verify) PENDING
 
 ---
 
