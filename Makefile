@@ -24,7 +24,7 @@ SHELL := /bin/bash
         registry-start registry-stop \
         falco-install phase-5 phase-4 jenkins-stop \
         reset-jenkins verify-jenkins verify-phase-4 verify-phase-5 \
-        teardown-argocd teardown-falco teardown-kyverno
+        teardown-argocd teardown-falco teardown-kyverno stack demo-warmup
 
 # ── Config ────────────────────────────────────────────────────────────────────
 REGISTRY_PORT    := 5001
@@ -38,17 +38,25 @@ JENKINS_PORT     := 8080
 ## Bootstrap the full stack (all phases)
 up: phase-1
 	@echo ""
-	@echo "✓ Phase 1 complete. Next phases (run in order):"
-	@echo "  make phase-2         — build + scan + push demoapp"
-	@echo "  make phase-2-deploy  — kubectl apply + rollout"
-	@echo "  make verify-phase-2  — run Phase 2 success criteria checks"
-	@echo "  make phase-3         — ArgoCD + Kyverno"
-	@echo "  make phase-4         — Jenkins CI"
-	@echo "  make phase-5         — Falco runtime security"
+	@echo "══════════════════════════════════════════════════════════════"
+	@echo "  ACTION REQUIRED: Restart Rancher Desktop to apply"
+	@echo "  the registry config written to ~/.rd/k3s/registries.yaml"
+	@echo ""
+	@echo "  Run:  rdctl shutdown && rdctl start"
+	@echo "  Wait: ~60 s for Kubernetes: Running in the RD tray icon"
+	@echo "  Then: make stack"
+	@echo "══════════════════════════════════════════════════════════════"
 
 ## Teardown everything
 down: registry-stop teardown-argocd teardown-falco jenkins-stop
 	@echo "✓ Stack torn down."
+
+## Bootstrap full stack after Rancher Desktop restart (installs ArgoCD, Kyverno, Jenkins, Falco)
+stack: phase-3 phase-3-apply phase-3-kyverno phase-4 phase-5
+	@echo ""
+	@echo "✓ Full stack bootstrapped."
+	@echo "  Run: make demo-warmup   — warms Trivy DB + verifies components before demo"
+	@echo "  Run: make demo-1 / demo-2 / demo-3"
 
 ## Show stack status
 status:
