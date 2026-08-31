@@ -4,18 +4,18 @@ milestone: v3.4.4
 milestone_name: milestone
 current_phase: 6
 status: unknown
-last_updated: "2026-08-28T10:56:58.483Z"
+last_updated: "2026-08-31T07:53:08.832Z"
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State
 
-**Last updated:** 2026-08-21
-**Current phase:** 6
+**Last updated:** 2026-08-31
+**Current phase:** 06
 **Overall status:** ON TRACK
 
 ---
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 
 **Core value:** Demonstrable, locally runnable pipeline where vulnerable container images are automatically blocked, secure images are deployed via GitOps, and cyberattacks are detected in real time — proving DevSecOps concepts work end-to-end.
 
-**Current focus:** Phase 05 — Runtime Security
+**Current focus:** Phase 06 — Demo Polish
 
 ---
 
@@ -71,6 +71,7 @@ Overall  [██████▌   ]  67% 4/6 phases complete
 - [2026-08-12] Phase 3 complete: ArgoCD v3.4.4 Synced/Healthy, Kyverno v1.18.2 with 4 ClusterPolicies, :latest blocked, no sync loop, 10/10 SC passed
 - [2026-08-14] Phase 4 Plan 04-test-scaffolds complete: Wave 0 CI validation harness (Dockerfile.fixed + smoke-test.sh + verify-jcasc.sh + scenario-1/2.sh); CI-03/04/05 requirements marked; scripts run later on Windows target
 - [2026-08-21] Phase 4 complete: Jenkins 2.555.3-lts-jdk21 via JCasC, docker-builder agent with Trivy v0.72.0 + yq v4, 4-stage Jenkinsfile (BUILD/SCAN/PUSH/BUMP), Scenario 1 (vulnerable image blocked at SCAN) and Scenario 2 (fixed image deployed via ArgoCD) both verified on Windows/Rancher Desktop target. 7/7 CI requirements met.
+- [2026-08-31] Phase 6 Plan 01 complete: Makefile upgraded — up: STOP message, stack: target (phases 3-5 chain), demo-warmup: target (k3s + ArgoCD + Trivy DB pre-warm); INFRA-04 + DOCS-04 requirements addressed
 
 ---
 

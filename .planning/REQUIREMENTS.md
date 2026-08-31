@@ -12,7 +12,7 @@
 - [ ] **INFRA-01**: Local Docker registry (`registry:2`) running on host and reachable from k3s cluster via `host.rancher-desktop.internal:5000`
 - [ ] **INFRA-02**: k3s single-node cluster running via Rancher Desktop 1.23.1 with registry configured in `registries.yaml`
 - [ ] **INFRA-03**: `kubectl get nodes` returns Ready; `curl` from inside cluster reaches local registry
-- [ ] **INFRA-04**: One-command bootstrap script (`make up`) installs all cluster components from scratch
+- [x] **INFRA-04**: One-command bootstrap script (`make up`) installs all cluster components from scratch
 
 ### Demo Application
 
@@ -67,7 +67,7 @@
 - [ ] **DOCS-01**: `docs/setup.md` — step-by-step bootstrap guide for fresh macOS install (Rancher Desktop prerequisites included)
 - [ ] **DOCS-02**: `docs/scenarios.md` — three demo runbooks with exact commands, expected outputs, and slide cues
 - [ ] **DOCS-03**: `docs/architecture.md` — component diagram (three security layers, data flow, network topology)
-- [ ] **DOCS-04**: `Makefile` with targets: `up`, `down`, `demo-1`, `demo-2`, `demo-3`, `reset-jenkins`
+- [x] **DOCS-04**: `Makefile` with targets: `up`, `down`, `demo-1`, `demo-2`, `demo-3`, `reset-jenkins`
 - [ ] **DOCS-05**: `README.md` with quickstart, prerequisites, and link to thesis context
 
 ---
@@ -120,7 +120,7 @@ Differentiators — add only after v1 is stable and demo scenarios are rehearsed
 | INFRA-01 | Phase 1: Bootstrap | Pending |
 | INFRA-02 | Phase 1: Bootstrap | Pending |
 | INFRA-03 | Phase 1: Bootstrap | Pending |
-| INFRA-04 | Phase 6: Polish | Pending |
+| INFRA-04 | Phase 6: Polish | Complete |
 | APP-01 | Phase 2: Manual Deploy | Complete |
 | APP-02 | Phase 2: Manual Deploy | Complete |
 | APP-03 | Phase 2: Manual Deploy | Complete |
@@ -154,7 +154,7 @@ Differentiators — add only after v1 is stable and demo scenarios are rehearsed
 | DOCS-01 | Phase 6: Polish | Pending |
 | DOCS-02 | Phase 6: Polish | Pending |
 | DOCS-03 | Phase 6: Polish | Pending |
-| DOCS-04 | Phase 6: Polish | Pending |
+| DOCS-04 | Phase 6: Polish | Complete |
 | DOCS-05 | Phase 6: Polish | Pending |
 
 **Coverage:**
