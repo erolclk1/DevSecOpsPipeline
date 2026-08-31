@@ -64,8 +64,8 @@
 
 ### Documentation & Reproducibility
 
-- [ ] **DOCS-01**: `docs/setup.md` — step-by-step bootstrap guide for fresh macOS install (Rancher Desktop prerequisites included)
-- [ ] **DOCS-02**: `docs/scenarios.md` — three demo runbooks with exact commands, expected outputs, and slide cues
+- [x] **DOCS-01**: `docs/setup.md` — step-by-step bootstrap guide for fresh macOS install (Rancher Desktop prerequisites included)
+- [x] **DOCS-02**: `docs/scenarios.md` — three demo runbooks with exact commands, expected outputs, and slide cues
 - [ ] **DOCS-03**: `docs/architecture.md` — component diagram (three security layers, data flow, network topology)
 - [x] **DOCS-04**: `Makefile` with targets: `up`, `down`, `demo-1`, `demo-2`, `demo-3`, `reset-jenkins`
 - [x] **DOCS-05**: `README.md` with quickstart, prerequisites, and link to thesis context
@@ -151,8 +151,8 @@ Differentiators — add only after v1 is stable and demo scenarios are rehearsed
 | DEMO-01 | Phase 6: Polish | Pending |
 | DEMO-02 | Phase 6: Polish | Pending |
 | DEMO-03 | Phase 6: Polish | Pending |
-| DOCS-01 | Phase 6: Polish | Pending |
-| DOCS-02 | Phase 6: Polish | Pending |
+| DOCS-01 | Phase 6: Polish | Complete |
+| DOCS-02 | Phase 6: Polish | Complete |
 | DOCS-03 | Phase 6: Polish | Pending |
 | DOCS-04 | Phase 6: Polish | Complete |
 | DOCS-05 | Phase 6: Polish | Complete |
