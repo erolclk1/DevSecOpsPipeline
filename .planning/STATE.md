@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v3.4.4
 milestone_name: milestone
-current_phase: 6
+current_phase: 06
 status: unknown
-last_updated: "2026-08-28T10:56:58.483Z"
+last_updated: "2026-08-31T07:44:52.082Z"
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 13
+  total_plans: 18
   completed_plans: 12
 ---
 
 # Project State
 
 **Last updated:** 2026-08-21
-**Current phase:** 6
+**Current phase:** 06
 **Overall status:** ON TRACK
 
 ---
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 
 **Core value:** Demonstrable, locally runnable pipeline where vulnerable container images are automatically blocked, secure images are deployed via GitOps, and cyberattacks are detected in real time — proving DevSecOps concepts work end-to-end.
 
-**Current focus:** Phase 05 — Runtime Security
+**Current focus:** Phase 06 — demo-polish
 
 ---
 
