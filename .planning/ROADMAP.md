@@ -284,7 +284,14 @@ Plans:
 2. **Pitfall 11 — Live-demo failure due to cold caches:** A fresh `make up` leaves Trivy DB uncached and ArgoCD syncs slow. Add a `make demo-warmup` target that runs a no-op build and forces a Trivy DB download before the audience arrives; document in `docs/scenarios.md`.
 3. **Pitfall 18 — Timezone mismatch:** Host timestamps and Falco log timestamps disagree by hours if not aligned. Set `TZ=UTC` in Jenkins, Falco, and demo app container env vars; document the UTC requirement in `docs/setup.md`.
 
-**Plans:** TBD
+**Plans:** 5 plans in 2 waves
+
+Plans:
+- [ ] 06-01-PLAN.md — Makefile upgrades: `up` STOP message, add `stack` + `demo-warmup` targets (INFRA-04, DOCS-04)
+- [ ] 06-02-PLAN.md — docs/setup.md + docs/scenarios.md (DOCS-01, DOCS-02)
+- [ ] 06-03-PLAN.md — docs/architecture.md + docs/DEMO-SCRIPT.md (DOCS-03)
+- [ ] 06-04-PLAN.md — README.md + app/README.md (DOCS-05, APP-05)
+- [ ] 06-05-PLAN.md — Demo rehearsal checkpoint: all 3 scenarios on Windows/WSL2 target (DEMO-01, DEMO-02, DEMO-03)
 
 **UI hint**: yes
 
