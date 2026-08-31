@@ -268,6 +268,24 @@ demo-3:
 	@echo "  UI:   kubectl port-forward svc/falco-falcosidekick-ui -n falco 2802:2802  (then http://localhost:2802)"
 	@echo "  File: tail -20 logs/falco.log"
 
+## Pre-warm Trivy DB cache and verify all components healthy before demo (run before committee arrives)
+demo-warmup:
+	@echo "── Warming demo stack ─────────────────────────────────────────────────"
+	@echo "Step 1/3: Check cluster is healthy"
+	@kubectl get nodes --no-headers | grep -q Ready || (echo "✗ k3s not ready — run: make stack"; exit 1)
+	@echo "  ✓ k3s: Ready"
+	@echo "Step 2/3: Check ArgoCD application sync status"
+	@kubectl get application -n argocd demoapp -o jsonpath='{.status.sync.status}' 2>/dev/null | grep -q Synced \
+		&& echo "  ✓ ArgoCD: Synced" \
+		|| echo "  (ArgoCD not yet Synced — wait 30 s and re-run if needed)"
+	@echo "Step 3/3: Pre-warm Trivy DB (download-db-only, uses ECR fallback)"
+	@docker run --rm -v "$$HOME/.trivy-cache:/root/.cache/trivy" aquasec/trivy:v0.72.0 \
+		image --download-db-only \
+		--db-repository public.ecr.aws/aquasecurity/trivy-db 2>&1 | tail -3
+	@echo ""
+	@echo "✓ Stack warm. Ready for demo."
+	@echo "  Run: make demo-1 / demo-2 / demo-3"
+
 ## Run Phase 5 end-to-end verification (requires Falco running + demoapp deployed)
 verify-phase-5:
 	@bash falco/verify-phase5.sh
