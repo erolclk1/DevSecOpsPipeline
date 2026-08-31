@@ -72,6 +72,7 @@ Overall  [██████▌   ]  67% 4/6 phases complete
 - [2026-08-14] Phase 4 Plan 04-test-scaffolds complete: Wave 0 CI validation harness (Dockerfile.fixed + smoke-test.sh + verify-jcasc.sh + scenario-1/2.sh); CI-03/04/05 requirements marked; scripts run later on Windows target
 - [2026-08-21] Phase 4 complete: Jenkins 2.555.3-lts-jdk21 via JCasC, docker-builder agent with Trivy v0.72.0 + yq v4, 4-stage Jenkinsfile (BUILD/SCAN/PUSH/BUMP), Scenario 1 (vulnerable image blocked at SCAN) and Scenario 2 (fixed image deployed via ArgoCD) both verified on Windows/Rancher Desktop target. 7/7 CI requirements met.
 - [2026-08-31] Phase 6 Plan 01 complete: Makefile upgraded — up: STOP message, stack: target (phases 3-5 chain), demo-warmup: target (k3s + ArgoCD + Trivy DB pre-warm); INFRA-04 + DOCS-04 requirements addressed
+- [2026-08-31] Phase 6 Plan 03 complete: docs/architecture.md (Mermaid component diagram with three security layers, data flow, network topology, key decisions table) + docs/DEMO-SCRIPT.md (line-by-line thesis committee script with Bulgarian narration, pre-demo checklist, fallback procedures, Q&A prep). DOCS-03 requirement met.
 
 ---
 
