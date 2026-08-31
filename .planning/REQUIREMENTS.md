@@ -20,7 +20,7 @@
 - [x] **APP-02**: Command injection endpoint (`os.system` / `child_process.exec` with unvalidated user input)
 - [x] **APP-03**: Dockerfile with deliberately outdated base image (pinned old digest) that guarantees Trivy HIGH/CRITICAL findings on every build
 - [x] **APP-04**: App initially runs as root in container (demonstrates Kyverno policy denial)
-- [ ] **APP-05**: App has a README documenting each vulnerability with OWASP 2021 category reference
+- [x] **APP-05**: App has a README documenting each vulnerability with OWASP 2021 category reference
 
 ### CI Pipeline (Jenkins + Trivy)
 
@@ -68,7 +68,7 @@
 - [ ] **DOCS-02**: `docs/scenarios.md` — three demo runbooks with exact commands, expected outputs, and slide cues
 - [ ] **DOCS-03**: `docs/architecture.md` — component diagram (three security layers, data flow, network topology)
 - [ ] **DOCS-04**: `Makefile` with targets: `up`, `down`, `demo-1`, `demo-2`, `demo-3`, `reset-jenkins`
-- [ ] **DOCS-05**: `README.md` with quickstart, prerequisites, and link to thesis context
+- [x] **DOCS-05**: `README.md` with quickstart, prerequisites, and link to thesis context
 
 ---
 
@@ -125,7 +125,7 @@ Differentiators — add only after v1 is stable and demo scenarios are rehearsed
 | APP-02 | Phase 2: Manual Deploy | Complete |
 | APP-03 | Phase 2: Manual Deploy | Complete |
 | APP-04 | Phase 2: Manual Deploy | Complete |
-| APP-05 | Phase 6: Polish | Pending |
+| APP-05 | Phase 6: Polish | Complete |
 | CI-01 | Phase 4: Jenkins CI | Complete |
 | CI-02 | Phase 4: Jenkins CI | Complete |
 | CI-03 | Phase 4: Jenkins CI | Complete |
@@ -155,7 +155,7 @@ Differentiators — add only after v1 is stable and demo scenarios are rehearsed
 | DOCS-02 | Phase 6: Polish | Pending |
 | DOCS-03 | Phase 6: Polish | Pending |
 | DOCS-04 | Phase 6: Polish | Pending |
-| DOCS-05 | Phase 6: Polish | Pending |
+| DOCS-05 | Phase 6: Polish | Complete |
 
 **Coverage:**
 - v1 requirements: 37 total
