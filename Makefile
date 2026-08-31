@@ -24,7 +24,7 @@ SHELL := /bin/bash
         registry-start registry-stop \
         falco-install phase-5 phase-4 jenkins-stop \
         reset-jenkins verify-jenkins verify-phase-4 verify-phase-5 \
-        teardown-argocd teardown-falco teardown-kyverno
+        teardown-argocd teardown-falco teardown-kyverno stack demo-warmup
 
 # ── Config ────────────────────────────────────────────────────────────────────
 REGISTRY_PORT    := 5001
@@ -38,17 +38,25 @@ JENKINS_PORT     := 8080
 ## Bootstrap the full stack (all phases)
 up: phase-1
 	@echo ""
-	@echo "✓ Phase 1 complete. Next phases (run in order):"
-	@echo "  make phase-2         — build + scan + push demoapp"
-	@echo "  make phase-2-deploy  — kubectl apply + rollout"
-	@echo "  make verify-phase-2  — run Phase 2 success criteria checks"
-	@echo "  make phase-3         — ArgoCD + Kyverno"
-	@echo "  make phase-4         — Jenkins CI"
-	@echo "  make phase-5         — Falco runtime security"
+	@echo "══════════════════════════════════════════════════════════════"
+	@echo "  ACTION REQUIRED: Restart Rancher Desktop to apply"
+	@echo "  the registry config written to ~/.rd/k3s/registries.yaml"
+	@echo ""
+	@echo "  Run:  rdctl shutdown && rdctl start"
+	@echo "  Wait: ~60 s for Kubernetes: Running in the RD tray icon"
+	@echo "  Then: make stack"
+	@echo "══════════════════════════════════════════════════════════════"
 
 ## Teardown everything
 down: registry-stop teardown-argocd teardown-falco jenkins-stop
 	@echo "✓ Stack torn down."
+
+## Bootstrap full stack after Rancher Desktop restart (installs ArgoCD, Kyverno, Jenkins, Falco)
+stack: phase-3 phase-3-apply phase-3-kyverno phase-4 phase-5
+	@echo ""
+	@echo "✓ Full stack bootstrapped."
+	@echo "  Run: make demo-warmup   — warms Trivy DB + verifies components before demo"
+	@echo "  Run: make demo-1 / demo-2 / demo-3"
 
 ## Show stack status
 status:
@@ -259,6 +267,24 @@ demo-3:
 	@echo "  Logs: kubectl logs -f -n falco -l app.kubernetes.io/name=falco"
 	@echo "  UI:   kubectl port-forward svc/falco-falcosidekick-ui -n falco 2802:2802  (then http://localhost:2802)"
 	@echo "  File: tail -20 logs/falco.log"
+
+## Pre-warm Trivy DB cache and verify all components healthy before demo (run before committee arrives)
+demo-warmup:
+	@echo "── Warming demo stack ─────────────────────────────────────────────────"
+	@echo "Step 1/3: Check cluster is healthy"
+	@kubectl get nodes --no-headers | grep -q Ready || (echo "✗ k3s not ready — run: make stack"; exit 1)
+	@echo "  ✓ k3s: Ready"
+	@echo "Step 2/3: Check ArgoCD application sync status"
+	@kubectl get application -n argocd demoapp -o jsonpath='{.status.sync.status}' 2>/dev/null | grep -q Synced \
+		&& echo "  ✓ ArgoCD: Synced" \
+		|| echo "  (ArgoCD not yet Synced — wait 30 s and re-run if needed)"
+	@echo "Step 3/3: Pre-warm Trivy DB (download-db-only, uses ECR fallback)"
+	@docker run --rm -v "$$HOME/.trivy-cache:/root/.cache/trivy" aquasec/trivy:v0.72.0 \
+		image --download-db-only \
+		--db-repository public.ecr.aws/aquasecurity/trivy-db 2>&1 | tail -3
+	@echo ""
+	@echo "✓ Stack warm. Ready for demo."
+	@echo "  Run: make demo-1 / demo-2 / demo-3"
 
 ## Run Phase 5 end-to-end verification (requires Falco running + demoapp deployed)
 verify-phase-5:
