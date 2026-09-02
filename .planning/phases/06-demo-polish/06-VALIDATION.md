@@ -46,8 +46,8 @@ created: 2026-08-31
 | 06-03-02 | arch | 1 | DOCS-03 | file+grep | `test -f docs/DEMO-SCRIPT.md && grep -q "make demo-" docs/DEMO-SCRIPT.md` | ❌ W0 | ⬜ pending |
 | 06-04-01 | readme | 1 | DOCS-05 | file+grep | `test -f README.md && grep -q "make phase-5\|make stack\|DevSecOps" README.md` | ❌ W0 | ⬜ pending |
 | 06-04-02 | readme | 1 | APP-05 | file+grep | `test -f app/README.md && grep -qi "OWASP\|injection\|vulnerable" app/README.md` | ❌ W0 | ⬜ pending |
-| 06-05-01 | verify | 2 | DEMO-01, DEMO-02, DEMO-03 | automated | `grep -q "demo-1" Makefile && grep -q "demo-2" Makefile && grep -q "demo-3" Makefile` | N/A | ⬜ pending |
-| 06-05-02 | verify | 2 | DEMO-01, DEMO-02, DEMO-03 | manual | On-target demo rehearsal checkpoint (see Manual-Only section) | N/A | ⬜ pending |
+| 06-05-01 | verify | 2 | DEMO-01, DEMO-02, DEMO-03 | automated | `grep -q "demo-1" Makefile && grep -q "demo-2" Makefile && grep -q "demo-3" Makefile` | N/A | ✅ green (commit 35116f8) |
+| 06-05-02 | verify | 2 | DEMO-01, DEMO-02, DEMO-03 | manual | On-target demo rehearsal checkpoint (see Manual-Only section) | N/A | ✅ green (approved 2026-09-02 on Windows/WSL2) |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -94,4 +94,4 @@ created: 2026-08-31
 - [ ] Feedback latency < 5s for all automated checks
 - [ ] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** SIGNED OFF — all three demo scenarios verified on Windows/WSL2 target, 2026-09-02
