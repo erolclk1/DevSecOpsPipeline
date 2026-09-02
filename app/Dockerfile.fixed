@@ -5,6 +5,7 @@ WORKDIR /app
 COPY package.fixed.json ./package.json
 COPY package-lock.fixed.json ./package-lock.json
 
+RUN apk update && apk upgrade
 RUN npm ci --omit=dev
 
 COPY server.js ./server.js
