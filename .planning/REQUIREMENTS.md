@@ -58,9 +58,9 @@
 
 ### Demo Scenarios
 
-- [ ] **DEMO-01**: Scenario 1 (Blocked Build): pipeline run with vulnerable image → Trivy fails → image NOT pushed → Jenkins shows red stage; screenshots and CVE report captured
-- [ ] **DEMO-02**: Scenario 2 (Successful Deploy): switch to fixed app branch → Trivy passes → ArgoCD syncs → Kyverno PolicyReport green → pod running
-- [ ] **DEMO-03**: Scenario 3 (Live Attack): attack scripts run against deployed app → Falcosidekick UI shows ≥3 matching alerts within 30 seconds → events persisted in `logs/falco.log`
+- [x] **DEMO-01**: Scenario 1 (Blocked Build): pipeline run with vulnerable image → Trivy fails → image NOT pushed → Jenkins shows red stage; screenshots and CVE report captured
+- [x] **DEMO-02**: Scenario 2 (Successful Deploy): switch to fixed app branch → Trivy passes → ArgoCD syncs → Kyverno PolicyReport green → pod running
+- [x] **DEMO-03**: Scenario 3 (Live Attack): attack scripts run against deployed app → Falcosidekick UI shows ≥3 matching alerts within 30 seconds → events persisted in `logs/falco.log`
 
 ### Documentation & Reproducibility
 

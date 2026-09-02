@@ -3,20 +3,20 @@ gsd_state_version: 1.0
 milestone: v3.4.4
 milestone_name: milestone
 current_phase: 06
-status: unknown
-last_updated: "2026-08-31T07:53:08.832Z"
+status: complete
+last_updated: "2026-09-02T09:30:00.000Z"
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 6
   total_plans: 18
-  completed_plans: 13
+  completed_plans: 18
 ---
 
 # Project State
 
-**Last updated:** 2026-08-31
-**Current phase:** 06
-**Overall status:** ON TRACK
+**Last updated:** 2026-09-02
+**Current phase:** 06 (COMPLETE)
+**Overall status:** COMPLETE — all 6 phases done
 
 ---
 
@@ -26,7 +26,7 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 
 **Core value:** Demonstrable, locally runnable pipeline where vulnerable container images are automatically blocked, secure images are deployed via GitOps, and cyberattacks are detected in real time — proving DevSecOps concepts work end-to-end.
 
-**Current focus:** Phase 06 — Demo Polish
+**Current focus:** Phase 06 — Demo Polish (COMPLETE)
 
 ---
 
@@ -38,8 +38,8 @@ See: `.planning/PROJECT.md` (updated 2026-07-02)
 | 2 | Vulnerable App | Complete | demoapp:6af2848 deployed, 4/4 SC passed (2026-07-23) |
 | 3 | GitOps | Complete | ArgoCD v3.4.4 + Kyverno v1.18.2, 10/10 SC passed (2026-08-12) |
 | 4 | Jenkins CI | Complete | JCasC + Trivy gate + GitOps bump, both scenarios green (2026-08-21) |
-| 5 | Runtime Security | Not started | Falco + Falcosidekick + attack scripts |
-| 6 | Demo Polish | Not started | Runbooks, Makefile, docs, diagram |
+| 5 | Runtime Security | Complete | Falco 0.44.1 modern_ebpf, 5 custom rules, attack scripts, all alerts verified (2026-08-28) |
+| 6 | Demo Polish | Complete | 5/5 plans done; all 3 demo scenarios verified on Windows/WSL2 (2026-09-02) |
 
 ---
 
@@ -50,10 +50,10 @@ Phase 1 [██████████] 100% Bootstrap
 Phase 2 [██████████] 100% Vulnerable App
 Phase 3 [██████████] 100% GitOps
 Phase 4 [██████████] 100% Jenkins CI
-Phase 5 [          ]   0% Runtime Security
-Phase 6 [          ]   0% Demo Polish
+Phase 5 [██████████] 100% Runtime Security
+Phase 6 [██████████] 100% Demo Polish
 ────────────────────────────────────────
-Overall  [██████▌   ]  67% 4/6 phases complete
+Overall  [██████████] 100% 6/6 phases complete
 ```
 
 ---
@@ -73,6 +73,7 @@ Overall  [██████▌   ]  67% 4/6 phases complete
 - [2026-08-21] Phase 4 complete: Jenkins 2.555.3-lts-jdk21 via JCasC, docker-builder agent with Trivy v0.72.0 + yq v4, 4-stage Jenkinsfile (BUILD/SCAN/PUSH/BUMP), Scenario 1 (vulnerable image blocked at SCAN) and Scenario 2 (fixed image deployed via ArgoCD) both verified on Windows/Rancher Desktop target. 7/7 CI requirements met.
 - [2026-08-31] Phase 6 Plan 01 complete: Makefile upgraded — up: STOP message, stack: target (phases 3-5 chain), demo-warmup: target (k3s + ArgoCD + Trivy DB pre-warm); INFRA-04 + DOCS-04 requirements addressed
 - [2026-08-31] Phase 6 Plan 03 complete: docs/architecture.md (Mermaid component diagram with three security layers, data flow, network topology, key decisions table) + docs/DEMO-SCRIPT.md (line-by-line thesis committee script with Bulgarian narration, pre-demo checklist, fallback procedures, Q&A prep). DOCS-03 requirement met.
+- [2026-09-02] Phase 6 Plan 05 complete: all three demo scenarios (Scenario 1: blocked build via Trivy, Scenario 2: successful GitOps deploy, Scenario 3: live Falco attack detection) verified end-to-end on Windows/WSL2 target. DEMO-01, DEMO-02, DEMO-03 requirements satisfied. Phase 6 and entire thesis pipeline complete.
 
 ---
 
@@ -94,7 +95,7 @@ Overall  [██████▌   ]  67% 4/6 phases complete
 
 ## Blockers
 
-None — Phase 4 complete. Ready to start Phase 5.
+None — all 6 phases complete. Thesis pipeline ready for committee presentation.
 
 ---
 
@@ -166,9 +167,9 @@ myProject/
 
 ## Todos
 
-- [ ] Start Phase 5: install Falco 0.44.1 via `helm upgrade --install` with `driver.kind=modern_ebpf`
-- [ ] Resolve Open Question 6: confirm `driver.kind=auto` behavior on Rancher Desktop before first Falco install
-- [ ] Resolve Open Question 7: verify Falcosidekick chart key names in chart 9.1.0 before writing Helm command
+- [x] Phase 5: Falco 0.44.1 installed with driver.kind=modern_ebpf — DONE
+- [x] Phase 6: All three demo scenarios verified on Windows/WSL2 — DONE
+- [x] All 37 requirements satisfied — DONE
 
 ---
 
@@ -180,7 +181,7 @@ To resume this project in a new session:
 2. Read `.planning/REQUIREMENTS.md` — 37 v1 requirements with phase assignments
 3. Read `.planning/ROADMAP.md` — 6 phases, tasks, success criteria, key risks
 4. Read this file (`.planning/STATE.md`) — current position, decisions, open questions
-5. Resume at: **Phase 5 — Runtime Security**
+5. Resume at: **COMPLETE — all 6 phases done. Run `/gsd:transition` to close the project.**
 
 The full research context is in `.planning/research/`: `STACK.md`, `FEATURES.md`, `ARCHITECTURE.md`, `PITFALLS.md`, `SUMMARY.md`.
 
@@ -188,9 +189,9 @@ The full research context is in `.planning/research/`: `STACK.md`, `FEATURES.md`
 
 ## Next Action
 
-Run `/gsd:plan-phase 5` to plan Phase 5: Runtime Security (Falco + Falcosidekick + attack scripts)
+All phases complete. Run `/gsd:transition` to produce the final project close-out and thesis artefact summary.
 
 ---
 
 *State initialized: 2026-07-02*
-*Last updated: 2026-07-02 after roadmap creation*
+*Last updated: 2026-09-02 — Phase 6 complete, all 37 requirements met*

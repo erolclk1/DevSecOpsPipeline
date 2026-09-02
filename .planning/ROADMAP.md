@@ -13,7 +13,7 @@
 - [x] **Phase 3: GitOps** — ArgoCD auto-syncs from Git; Kyverno enforces admission policies; no direct cluster writes (completed 2026-08-12)
 - [x] **Phase 4: Jenkins CI** — JCasC-driven pipeline automates build → Trivy scan → push → manifest bump without human involvement (completed 2026-08-21)
 - [~] **Phase 5: Runtime Security** — Falco detects all three attack patterns; Falcosidekick persists alerts to file and webui (plans 05-01/02 complete; 05-03 Task 3 at human checkpoint 2026-08-28)
-- [ ] **Phase 6: Demo Polish** — Three scenarios run from a Makefile; full stack reproduces on a clean machine from docs alone
+- [x] **Phase 6: Demo Polish** — Three scenarios run from a Makefile; full stack reproduces on a clean machine from docs alone (completed 2026-09-02)
 
 ---
 
@@ -291,7 +291,7 @@ Plans:
 - [x] 06-02-PLAN.md — docs/setup.md + docs/scenarios.md (DOCS-01, DOCS-02)
 - [x] 06-03-PLAN.md — docs/architecture.md + docs/DEMO-SCRIPT.md (DOCS-03)
 - [x] 06-04-PLAN.md — README.md + app/README.md (DOCS-05, APP-05)
-- [ ] 06-05-PLAN.md — Demo rehearsal checkpoint: all 3 scenarios on Windows/WSL2 target (DEMO-01, DEMO-02, DEMO-03)
+- [x] 06-05-PLAN.md — Demo rehearsal checkpoint: all 3 scenarios on Windows/WSL2 target (DEMO-01, DEMO-02, DEMO-03)
 
 **UI hint**: yes
 
@@ -304,9 +304,9 @@ Plans:
 | 1. Bootstrap | 2/2 | Complete    | 2026-07-09 |
 | 2. Vulnerable App | 2/2 | Complete | 2026-07-23 |
 | 3. GitOps | 2/2 | Complete    | 2026-08-12 |
-| 4. Jenkins CI | 0/4 | Planned | — |
-| 5. Runtime Security | 0/3 | Planned | — |
-| 6. Demo Polish | 0/0 | Not started | — |
+| 4. Jenkins CI | 4/4 | Complete | 2026-08-21 |
+| 5. Runtime Security | 3/3 | Complete | 2026-08-28 |
+| 6. Demo Polish | 5/5 | Complete | 2026-09-02 |
 
 ---
 
